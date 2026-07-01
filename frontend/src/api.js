@@ -1,0 +1,45 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+function headers(role) {
+  return {
+    'Content-Type': 'application/json',
+    'user-role': role,
+  };
+}
+
+async function parse(res) {
+  const data = await res.json();
+  if (!res.ok) {
+    const message = data?.detail || data?.message || `Request failed with ${res.status}`;
+    throw new Error(message);
+  }
+  return data;
+}
+
+export async function fetchSurgeries(role) {
+  const res = await fetch(`${API_BASE}/surgeries`, { headers: headers(role) });
+  return parse(res);
+}
+
+export async function fetchSurgery(role, surgeryId) {
+  const res = await fetch(`${API_BASE}/surgeries/${surgeryId}`, { headers: headers(role) });
+  return parse(res);
+}
+
+export async function checkReadiness(role, surgeryId) {
+  const res = await fetch(`${API_BASE}/check-readiness`, {
+    method: 'POST',
+    headers: headers(role),
+    body: JSON.stringify({
+      surgery_id: surgeryId,
+      user_role: role,
+      requested_at: new Date().toISOString(),
+    }),
+  });
+  return parse(res);
+}
+
+export async function fetchAudit(role, surgeryId, limit = 100) {
+  const res = await fetch(`${API_BASE}/audit/${surgeryId}?limit=${limit}`, { headers: headers(role) });
+  return parse(res);
+}

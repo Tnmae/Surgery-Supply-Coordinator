@@ -1,0 +1,67 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.pyre/
+.tox/
+.nox/
+.venv/
+venv/
+ENV/
+env/
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Backend / app runtime artifacts
+backend/logs/
+backend/myvenv
+*.log
+*.sqlite3
+*.db
+backend/*.sqlite3
+backend/*.db
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Generated / temporary
+coverage/
+.cache/
+tmp/
+temp/
+
+# Optional local dashboard leftovers
+.dashboard/
+dashboard/

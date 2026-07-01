@@ -1,0 +1,23 @@
+"""Placeholder for future pyproject.toml."""
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "critical-surgery-supply-coordinator"
+version = "1.0.0"
+description = "Decision-support system for surgical readiness using multi-agent architecture"
+authors = [
+    {name = "AI Assistant", email = "ai@example.com"}
+]
+requires-python = ">=3.11"
+dependencies = [
+    "FastAPI>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.11.0",
+    "requests>=2.31.0",
+]
+
+[project.urls]
+Repository = "https://github.com/example/critical-surgery-supply-coordinator"

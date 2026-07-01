@@ -1,0 +1,86 @@
+"""Demo scenarios for the Critical Surgery Supply Coordinator."""
+
+{
+  "scenarios": [
+    {
+      "scenario_id": 1,
+      "name": "All Clear",
+      "surgery_id": "SURG001",
+      "description": "All resources available, all consents in place, no blockers",
+      "expected_status": "READY",
+      "notes": "This is the happy path - everything is in place for surgery"
+    },
+    {
+      "scenario_id": 2,
+      "name": "Expired Blood",
+      "surgery_id": "SURG002",
+      "description": "Blood of correct type is available but expired",
+      "expected_status": "BLOCKED",
+      "blocker_category": "BLOOD",
+      "notes": "Demonstrates blood unit expiration checking"
+    },
+    {
+      "scenario_id": 3,
+      "name": "Wrong Blood Type",
+      "surgery_id": "SURG003",
+      "description": "Only wrong blood type is available in inventory",
+      "expected_status": "BLOCKED",
+      "blocker_category": "BLOOD",
+      "notes": "Demonstrates blood type compatibility checking"
+    },
+    {
+      "scenario_id": 4,
+      "name": "Organ Viability Risk",
+      "surgery_id": "SURG004",
+      "description": "Organ is available but approaching end of viability window",
+      "expected_status": "WARNING",
+      "blocker_category": "ORGAN",
+      "notes": "Demonstrates organ viability window checking - future implementation"
+    },
+    {
+      "scenario_id": 5,
+      "name": "Missing Equipment",
+      "surgery_id": "SURG005",
+      "description": "Required equipment is not available",
+      "expected_status": "BLOCKED",
+      "blocker_category": "EQUIPMENT",
+      "notes": "Demonstrates equipment availability checking - future implementation"
+    },
+    {
+      "scenario_id": 6,
+      "name": "Missing Consent",
+      "surgery_id": "SURG006",
+      "description": "Required transfusion consent is not signed",
+      "expected_status": "BLOCKED",
+      "blocker_category": "CONSENT",
+      "notes": "Demonstrates consent verification - safety/consent agent"
+    },
+    {
+      "scenario_id": 7,
+      "name": "Crossmatch Pending",
+      "surgery_id": "SURG007",
+      "description": "Blood is available but crossmatch testing is still pending",
+      "expected_status": "WARNING",
+      "blocker_category": "BLOOD",
+      "notes": "Demonstrates crossmatch status tracking"
+    }
+  ],
+  "test_commands": [
+    {
+      "scenario": "All Clear",
+      "command": "curl -X POST http://localhost:8000/check-readiness -H 'user-role: OR_COORDINATOR' -H 'Content-Type: application/json' -d '{\"surgery_id\": \"SURG001\", \"user_role\": \"OR_COORDINATOR\", \"requested_at\": \"2026-06-29T14:00:00Z\"}'"
+    },
+    {
+      "scenario": "Expired Blood",
+      "command": "curl -X POST http://localhost:8000/check-readiness -H 'user-role: OR_COORDINATOR' -H 'Content-Type: application/json' -d '{\"surgery_id\": \"SURG002\", \"user_role\": \"OR_COORDINATOR\", \"requested_at\": \"2026-06-29T14:00:00Z\"}'"
+    },
+    {
+      "scenario": "Wrong Blood Type",
+      "command": "curl -X POST http://localhost:8000/check-readiness -H 'user-role: OR_COORDINATOR' -H 'Content-Type: application/json' -d '{\"surgery_id\": \"SURG003\", \"user_role\": \"OR_COORDINATOR\", \"requested_at\": \"2026-06-29T14:00:00Z\"}'"
+    },
+    {
+      "scenario": "Missing Consent",
+      "command": "curl -X POST http://localhost:8000/check-readiness -H 'user-role: OR_COORDINATOR' -H 'Content-Type: application/json' -d '{\"surgery_id\": \"SURG006\", \"user_role\": \"OR_COORDINATOR\", \"requested_at\": \"2026-06-29T14:00:00Z\"}'"
+    }
+  ]
+}
