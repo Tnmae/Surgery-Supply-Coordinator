@@ -1,12 +1,16 @@
 """FastAPI main application and endpoints."""
 
 import logging
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, Header, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
+
+load_dotenv()
 
 from src.config import Config
 from src.data.repository import DataRepository
@@ -17,6 +21,8 @@ from src.security.audit_logger import AuditLogger
 from src.agents.patient_data_agent import PatientDataAgent
 from src.agents.safety_consent_agent import SafetyConsentAgent
 from src.agents.blood_bank_agent import BloodBankAgent
+from src.adk_pipeline.pipeline import run_readiness_pipeline, llm_coordinator_available
+from src.adk_pipeline.llm_pipeline import run_llm_readiness_pipeline
 
 
 # Configure logging
@@ -85,7 +91,9 @@ async def health_check() -> dict:
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "service": Config.APP_NAME,
-        "version": Config.APP_VERSION
+        "version": Config.APP_VERSION,
+        "llm_pipeline_configured": bool(os.environ.get("OPENROUTER_API_KEY")),
+        "adk_coordinator_llm_configured": llm_coordinator_available()
     }
 
 
@@ -269,6 +277,77 @@ async def check_readiness(
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat()
         })
+
+
+@app.post("/check-readiness/pipeline")
+async def check_readiness_pipeline_llm(
+    request: ReadinessCheckRequest,
+    user_role: str = Depends(check_readiness_permission)
+) -> dict:
+    """
+    Check surgery readiness using the LLM-per-agent Google ADK orchestration pipeline:
+
+    Patient Data -> Safety/Consent -> [Blood | Organ | Equipment] (parallel)
+    -> Validation -> Logistics -> Coordinator -> human review.
+
+    Every stage is its own call to the configured LLM endpoint (gpt-oss-120b
+    via OpenRouter - see backend/.env), guided by that agent's own rules
+    file under src/adk_pipeline/prompts/. Requires OPENROUTER_API_KEY to be
+    set in backend/.env.
+
+    Required header: user-role (must be OR_COORDINATOR or SUPPLY_ADMIN)
+    """
+    surgery_id = request.surgery_id
+
+    audit_logger.log_action(
+        action="LLM_CHECK_READINESS_REQUESTED",
+        actor_role=user_role,
+        entity_type="SURGERY",
+        entity_id=surgery_id,
+        details={"timestamp": request.requested_at.isoformat()},
+    )
+
+    surgery_dict = repository.get_surgery(surgery_id)
+    if not surgery_dict:
+        raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
+
+    report = await run_llm_readiness_pipeline(surgery_id, user_role, repository, audit_logger)
+    return add_disclaimer(report)
+
+
+@app.post("/check-readiness/pipeline/deterministic")
+async def check_readiness_pipeline_deterministic(
+    request: ReadinessCheckRequest,
+    user_role: str = Depends(check_readiness_permission)
+) -> dict:
+    """
+    Check surgery readiness using the deterministic Google ADK orchestration pipeline:
+
+    Patient Data -> Safety/Consent -> [Blood | Organ | Equipment] (parallel)
+    -> Validation -> Logistics -> Coordinator -> human review.
+
+    All readiness decisions are made by deterministic ADK BaseAgent stages;
+    the coordinator's optional LLM step (only run if GOOGLE_API_KEY is
+    configured) only narrates the already-decided result and cannot alter it.
+
+    Required header: user-role (must be OR_COORDINATOR or SUPPLY_ADMIN)
+    """
+    surgery_id = request.surgery_id
+
+    audit_logger.log_action(
+        action="ADK_CHECK_READINESS_REQUESTED",
+        actor_role=user_role,
+        entity_type="SURGERY",
+        entity_id=surgery_id,
+        details={"timestamp": request.requested_at.isoformat()},
+    )
+
+    surgery_dict = repository.get_surgery(surgery_id)
+    if not surgery_dict:
+        raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
+
+    report = await run_readiness_pipeline(surgery_id, user_role, repository, audit_logger)
+    return add_disclaimer(report)
 
 
 @app.get("/audit/{surgery_id}")

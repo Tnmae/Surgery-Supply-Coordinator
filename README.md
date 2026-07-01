@@ -142,7 +142,7 @@ Headers: user-role: OR_COORDINATOR
 GET /surgeries/{surgery_id}
 Headers: user-role: OR_COORDINATOR
 
-# Check readiness (requires authorization)
+# Check readiness (deterministic Python workflow, Phase 1 agents only)
 POST /check-readiness
 Headers: user-role: OR_COORDINATOR
 Body: {
@@ -150,6 +150,12 @@ Body: {
   "user_role": "OR_COORDINATOR",
   "requested_at": "2026-06-29T14:00:00"
 }
+
+# Check readiness via the full Google ADK orchestration pipeline
+# (all 8 agents; SequentialAgent + ParallelAgent; see "ADK Pipeline" below)
+POST /check-readiness/pipeline
+Headers: user-role: OR_COORDINATOR
+Body: (same as above)
 ```
 
 ### Audit Trail
@@ -205,33 +211,59 @@ curl -X POST http://localhost:8000/check-readiness \
 - Checks crossmatch status
 - Falls back to regional inventory if needed
 
-### 4. Organ Agent (Skeleton - Phase 3)
+### 4. Organ Agent
 - Queries organ registry
 - Checks donor-recipient compatibility
 - Verifies viability windows
-- Estimates procurement time
+- Falls back to regional network if needed
 
-### 5. Equipment Agent (Skeleton - Phase 3)
+### 5. Equipment Agent
 - Queries equipment inventory
 - Verifies sterilization status
 - Checks maintenance schedules
 - Confirms all required equipment is available
 
-### 6. Validation Agent (Skeleton - Phase 3)
-- Cross-checks resource compatibility
+### 6. Validation Agent
+- Cross-checks resource compatibility (organ viability vs. procedure duration, pending crossmatch vs. transplant, etc.)
 - Validates timing constraints
 - Ensures all requirements are met
 
-### 7. Logistics Agent (Skeleton - Phase 3)
-- Estimates transport times
+### 7. Logistics Agent
+- Estimates regional transport times for blood/organ fallback
 - Calculates total procedure timeline
 - Identifies time-critical constraints
 
-### 8. Coordinator Agent (Skeleton - Phase 3)
-- Aggregates findings from all agents
-- Determines final readiness status (READY/NOT_READY/BLOCKED)
-- Generates pre-operative checklist
-- Produces human-readable report
+### 8. Coordinator Agent
+- Deterministically aggregates findings from all agents into the final readiness status (READY/BLOCKED) - never LLM-decided
+- Generates the pre-operative checklist
+- Optionally uses an LLM (Gemini, via Google ADK) to turn the already-finalized structured result into a human-readable narrative briefing - see "ADK Pipeline" below
+
+## ADK Pipeline
+
+`POST /check-readiness/pipeline` runs the 8-agent architecture above as an
+actual Google ADK orchestration graph (`backend/src/adk_pipeline/`):
+
+```
+SequentialAgent(
+    PatientDataStage, SafetyConsentStage,
+    ParallelAgent(BloodBankStage, OrganStage, EquipmentStage),
+    ValidationStage, LogisticsStage, AggregatorStage,
+    [coordinator_narrator]   # LLM step, gemini-flash-latest
+)
+```
+
+Every stage through `AggregatorStage` is a deterministic `BaseAgent` - no LLM
+involved - so the READY/BLOCKED verdict and blockers can never be
+hallucinated. The **only** LLM step is the final `coordinator_narrator`
+(`Agent` with `model="gemini-flash-latest"`), which reads the
+already-decided, PII-redacted result and writes a short human-readable
+briefing. It cannot change the status.
+
+The LLM step only runs if `GOOGLE_API_KEY` (or Vertex AI credentials) is set
+in `backend/.env` (see `backend/.env.example`). Without it, the pipeline
+still runs end-to-end and returns a template-based narrative instead - check
+`adk_coordinator_llm_configured` on `GET /health` or `coordinator_used_llm`
+on the pipeline response to see which mode is active.
 
 ## Security Features
 
@@ -368,12 +400,13 @@ curl -X POST http://localhost:8000/check-readiness \
 - ✅ PII redaction and RBAC
 - ✅ Audit logging
 
-### Phase 2 (Next)
-- ⬜ Organ Agent (full implementation)
-- ⬜ Equipment Agent (full implementation)
-- ⬜ Validation Agent
-- ⬜ Logistics Agent
-- ⬜ Coordinator Agent
+### Phase 2 ✅
+- ✅ Organ Agent (full implementation)
+- ✅ Equipment Agent (full implementation)
+- ✅ Validation Agent
+- ✅ Logistics Agent
+- ✅ Coordinator Agent (deterministic aggregation + optional LLM narrative)
+- ✅ Google ADK orchestration pipeline (`POST /check-readiness/pipeline`)
 - ⬜ Frontend enhancements
 - ⬜ Integration tests
 
