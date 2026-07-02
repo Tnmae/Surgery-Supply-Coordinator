@@ -1,0 +1,468 @@
+{
+  "surgeries": [
+    {
+      "surgery_id": "SURG001",
+      "patient_id": "PAT001",
+      "surgery_type": "CARDIAC",
+      "scheduled_time": "2026-06-29T14:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 4,
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "BYPASS_MACHINE"],
+      "estimated_duration_minutes": 180,
+      "status": "PENDING",
+      "created_at": "2026-06-29T08:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "All clear scenario - all resources available"
+    },
+    {
+      "surgery_id": "SURG002",
+      "patient_id": "PAT002",
+      "surgery_type": "ORGAN_TRANSPLANT",
+      "scheduled_time": "2026-06-29T15:00:00",
+      "required_blood_type": "A-",
+      "required_blood_units": 6,
+      "organ_type": "HEART",
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "BYPASS_MACHINE"],
+      "estimated_duration_minutes": 360,
+      "status": "PENDING",
+      "created_at": "2026-06-29T08:30:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Expired blood scenario - blood available but expired"
+    },
+    {
+      "surgery_id": "SURG003",
+      "patient_id": "PAT003",
+      "surgery_type": "TRAUMA",
+      "scheduled_time": "2026-06-29T13:00:00",
+      "required_blood_type": "B+",
+      "required_blood_units": 8,
+      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE", "OVERHEAD_LIGHTS"],
+      "estimated_duration_minutes": 120,
+      "status": "PENDING",
+      "created_at": "2026-06-29T09:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Wrong blood type scenario - only wrong type available"
+    },
+    {
+      "surgery_id": "SURG004",
+      "patient_id": "PAT004",
+      "surgery_type": "ORGAN_TRANSPLANT",
+      "scheduled_time": "2026-06-29T16:00:00",
+      "required_blood_type": "AB+",
+      "required_blood_units": 4,
+      "organ_type": "LIVER",
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR"],
+      "estimated_duration_minutes": 300,
+      "status": "PENDING",
+      "created_at": "2026-06-29T09:15:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Organ viability risk scenario"
+    },
+    {
+      "surgery_id": "SURG005",
+      "patient_id": "PAT005",
+      "surgery_type": "GENERAL",
+      "scheduled_time": "2026-06-29T17:00:00",
+      "required_blood_type": "O-",
+      "required_blood_units": 2,
+      "equipment_list": ["VENTILATOR", "MISSING_EQUIPMENT"],
+      "estimated_duration_minutes": 90,
+      "status": "PENDING",
+      "created_at": "2026-06-29T09:30:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Missing equipment scenario"
+    },
+    {
+      "surgery_id": "SURG006",
+      "patient_id": "PAT006",
+      "surgery_type": "CARDIAC",
+      "scheduled_time": "2026-06-29T18:00:00",
+      "required_blood_type": "A+",
+      "required_blood_units": 3,
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR"],
+      "estimated_duration_minutes": 150,
+      "status": "PENDING",
+      "created_at": "2026-06-29T09:45:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Missing consent scenario"
+    },
+    {
+      "surgery_id": "SURG007",
+      "patient_id": "PAT007",
+      "surgery_type": "TRAUMA",
+      "scheduled_time": "2026-06-29T12:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 6,
+      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE"],
+      "estimated_duration_minutes": 120,
+      "status": "PENDING",
+      "created_at": "2026-06-29T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Crossmatch pending scenario"
+    }
+  ],
+  "blood_units": [
+    {
+      "unit_id": "BLOOD001",
+      "blood_type": "O+",
+      "collected_date": "2026-06-01T10:00:00",
+      "expiration_date": "2026-07-15T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG001 - all clear"
+    },
+    {
+      "unit_id": "BLOOD002",
+      "blood_type": "O+",
+      "collected_date": "2026-06-01T11:00:00",
+      "expiration_date": "2026-07-15T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD003",
+      "blood_type": "O+",
+      "collected_date": "2026-06-01T12:00:00",
+      "expiration_date": "2026-07-15T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD004",
+      "blood_type": "O+",
+      "collected_date": "2026-06-01T13:00:00",
+      "expiration_date": "2026-07-15T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD005",
+      "blood_type": "A-",
+      "collected_date": "2026-06-05T10:00:00",
+      "expiration_date": "2026-06-28T10:00:00",
+      "status": "EXPIRED",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "Expired unit for SURG002 scenario"
+    },
+    {
+      "unit_id": "BLOOD006",
+      "blood_type": "A-",
+      "collected_date": "2026-06-05T11:00:00",
+      "expiration_date": "2026-06-28T11:00:00",
+      "status": "EXPIRED",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD007",
+      "blood_type": "B+",
+      "collected_date": "2026-06-10T10:00:00",
+      "expiration_date": "2026-07-24T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "Wrong type for SURG003 (needs B+ but requesting something else)"
+    },
+    {
+      "unit_id": "BLOOD008",
+      "blood_type": "O+",
+      "collected_date": "2026-06-28T10:00:00",
+      "expiration_date": "2026-07-28T10:00:00",
+      "status": "PENDING_CROSSMATCH",
+      "crossmatch_status": "PENDING",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "Pending crossmatch for SURG007 scenario"
+    },
+    {
+      "unit_id": "BLOOD009",
+      "blood_type": "AB+",
+      "collected_date": "2026-06-25T10:00:00",
+      "expiration_date": "2026-07-25T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "COMPATIBLE",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG004 - organ transplant"
+    },
+    {
+      "unit_id": "BLOOD010",
+      "blood_type": "AB+",
+      "collected_date": "2026-06-25T11:00:00",
+      "expiration_date": "2026-07-25T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "COMPATIBLE",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    }
+  ],
+  "organs": [
+    {
+      "organ_id": "ORG001",
+      "organ_type": "HEART",
+      "donor_id": "DONOR001",
+      "procurement_time": "2026-06-29T10:00:00",
+      "viability_window_minutes": 240,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-06-29T10:15:00",
+      "expected_arrival_at_recipient": "2026-06-29T15:30:00",
+      "donor_blood_type": "AB+",
+      "donor_age": 28,
+      "notes": "For SURG004 - organ viability at risk"
+    },
+    {
+      "organ_id": "ORG002",
+      "organ_type": "LIVER",
+      "donor_id": "DONOR002",
+      "procurement_time": "2026-06-29T06:00:00",
+      "viability_window_minutes": 480,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-06-29T06:15:00",
+      "expected_arrival_at_recipient": "2026-06-29T16:00:00",
+      "donor_blood_type": "A+",
+      "donor_age": 45,
+      "notes": "Acceptable viability window"
+    }
+  ],
+  "equipment": [
+    {
+      "equipment_id": "EQ001",
+      "name": "VENTILATOR",
+      "equipment_type": "VENTILATOR",
+      "location": "OR_1",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-06-15T10:00:00",
+      "next_maintenance_due": "2026-07-15T10:00:00",
+      "serial_number": "VENT-2024-001",
+      "purchase_date": "2024-01-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ002",
+      "name": "CARDIAC_MONITOR",
+      "equipment_type": "MONITOR",
+      "location": "OR_1",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-06-20T10:00:00",
+      "next_maintenance_due": "2026-07-20T10:00:00",
+      "serial_number": "MON-2024-002",
+      "purchase_date": "2024-02-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ003",
+      "name": "BYPASS_MACHINE",
+      "equipment_type": "CARDIAC_BYPASS",
+      "location": "OR_1",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-06-10T10:00:00",
+      "next_maintenance_due": "2026-07-10T10:00:00",
+      "serial_number": "BYPASS-2023-001",
+      "purchase_date": "2023-06-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ004",
+      "name": "ANESTHESIA_MACHINE",
+      "equipment_type": "ANESTHESIA",
+      "location": "OR_2",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-06-18T10:00:00",
+      "next_maintenance_due": "2026-07-18T10:00:00",
+      "serial_number": "ANES-2024-003",
+      "purchase_date": "2024-03-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ005",
+      "name": "OVERHEAD_LIGHTS",
+      "equipment_type": "LIGHTING",
+      "location": "OR_2",
+      "status": "AVAILABLE",
+      "sterilization_status": "NOT_APPLICABLE",
+      "last_maintenance_date": "2026-06-15T10:00:00",
+      "next_maintenance_due": "2026-08-15T10:00:00",
+      "serial_number": "LIGHT-2023-005",
+      "purchase_date": "2023-08-15T00:00:00"
+    }
+  ],
+  "patients": [
+    {
+      "patient_id": "PAT001",
+      "date_of_birth": "1960-03-15T00:00:00",
+      "blood_type": "O+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-06-28T10:00:00",
+          "expires": "2026-07-28T10:00:00",
+          "witness": "DR. SMITH",
+          "notes": "Signed and witnessed"
+        }
+      ],
+      "medications": ["ASPIRIN", "METOPROLOL"],
+      "prior_surgeries": 2,
+      "special_notes": "Scenario: all clear"
+    },
+    {
+      "patient_id": "PAT002",
+      "date_of_birth": "1975-07-20T00:00:00",
+      "blood_type": "A-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-06-28T10:00:00",
+          "expires": "2026-07-28T10:00:00",
+          "witness": "DR. JONES",
+          "notes": "Signed and witnessed"
+        },
+        {
+          "consent_type": "ORGAN_TRANSPLANT",
+          "given": true,
+          "date_given": "2026-06-28T10:00:00",
+          "expires": "2026-07-28T10:00:00",
+          "witness": "DR. JONES"
+        }
+      ],
+      "medications": ["WARFARIN"],
+      "prior_surgeries": 1,
+      "special_notes": "Scenario: expired blood"
+    },
+    {
+      "patient_id": "PAT003",
+      "date_of_birth": "1985-11-30T00:00:00",
+      "blood_type": "B+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-06-29T08:00:00",
+          "expires": "2026-06-30T08:00:00",
+          "witness": "NURSE_BROWN"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: wrong blood type"
+    },
+    {
+      "patient_id": "PAT004",
+      "date_of_birth": "1968-02-10T00:00:00",
+      "blood_type": "AB+",
+      "allergies": [
+        {
+          "allergen": "PENICILLIN",
+          "severity": "SEVERE",
+          "reaction": "ANAPHYLAXIS"
+        }
+      ],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-06-28T10:00:00",
+          "expires": "2026-07-28T10:00:00",
+          "witness": "DR. WILLIAMS"
+        },
+        {
+          "consent_type": "ORGAN_TRANSPLANT",
+          "given": true,
+          "date_given": "2026-06-28T10:00:00",
+          "expires": "2026-07-28T10:00:00",
+          "witness": "DR. WILLIAMS"
+        }
+      ],
+      "medications": ["IMMUNOSUPPRESSANTS"],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: organ viability risk"
+    },
+    {
+      "patient_id": "PAT005",
+      "date_of_birth": "1992-05-22T00:00:00",
+      "blood_type": "O-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-06-29T08:00:00",
+          "expires": "2026-06-30T08:00:00",
+          "witness": "NURSE_DAVIS"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: missing equipment"
+    },
+    {
+      "patient_id": "PAT006",
+      "date_of_birth": "1970-09-05T00:00:00",
+      "blood_type": "A+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "TRANSFUSION",
+          "given": false,
+          "date_given": null,
+          "expires": null,
+          "witness": null,
+          "notes": "Transfusion consent NOT given"
+        }
+      ],
+      "medications": ["LISINOPRIL"],
+      "prior_surgeries": 1,
+      "special_notes": "Scenario: missing consent"
+    },
+    {
+      "patient_id": "PAT007",
+      "date_of_birth": "1995-12-12T00:00:00",
+      "blood_type": "O+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-06-29T06:00:00",
+          "expires": "2026-06-29T18:00:00",
+          "witness": "ER_NURSE"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-06-29T06:00:00",
+          "expires": "2026-06-29T18:00:00",
+          "witness": "ER_NURSE"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: crossmatch pending"
+    }
+  ]
+}
