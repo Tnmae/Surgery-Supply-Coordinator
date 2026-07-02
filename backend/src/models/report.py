@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -90,3 +90,13 @@ class ReadinessCheckResponse(BaseModel):
     message: str
     report: Optional[ReadinessReport] = None
     errors: List[str] = Field(default_factory=list)
+
+
+class BlockerDecisionRequest(BaseModel):
+    """A clinician's accept/reject decision on a single reported blocker."""
+    category: str
+    message: str
+    severity: Optional[str] = None
+    suggested_action: Optional[str] = None
+    decision: Literal["ACCEPT", "REJECT"]
+    notes: Optional[str] = None

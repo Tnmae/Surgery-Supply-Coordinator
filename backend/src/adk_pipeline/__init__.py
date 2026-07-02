@@ -1,14 +1,16 @@
 """ADK-orchestrated readiness pipeline.
 
-Wires the agents in `src.agents` together with Google ADK's `SequentialAgent`
-and `ParallelAgent` workflow primitives, matching the pipeline described in
-the project README:
+Wires eight `LlmReasoningStage` agents (see `llm_reasoning_stage.py` and
+`llm_stages.py`) together with Google ADK's `SequentialAgent` and
+`ParallelAgent` workflow primitives, matching the pipeline described in the
+project README:
 
     Patient Data -> Safety/Consent -> [Blood | Organ | Equipment] (parallel)
     -> Validation -> Logistics -> Coordinator -> human review
 
-All clinical/safety logic (consents, compatibility, blockers) runs in
-deterministic Python agents - never inside an LLM - so the readiness verdict
-can never be hallucinated. The one LLM step (the coordinator) only turns the
-already-decided structured result into a human-readable narrative.
+Agents fire automatically in this sequence - ADK orchestration decides that,
+not an LLM - but every stage's own judgment is an LLM call against its
+prompt file under `prompts/`. Because none of the clinical/safety logic is
+deterministic Python, the resulting report is decision-support only and
+always requires human review before any action is taken.
 """

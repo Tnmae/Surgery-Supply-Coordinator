@@ -57,11 +57,10 @@ critical-surgery-supply-coordinator/
 │   │   ├── main.py                    # FastAPI entry point
 │   │   ├── config.py                  # Configuration
 │   │   ├── models/                    # Pydantic models
-│   │   ├── agents/                    # Agent implementations
+│   │   ├── adk_pipeline/              # Google ADK LLM-per-agent pipeline
 │   │   ├── mcp_servers/               # Mock MCP servers
 │   │   ├── data/                      # Data repository & mock data
-│   │   ├── security/                  # PII redaction, RBAC, audit
-│   │   └── workflows/                 # Workflow orchestration
+│   │   └── security/                  # PII redaction, RBAC, audit
 │   └── tests/
 ├── frontend/
 │   ├── Dockerfile
@@ -142,7 +141,8 @@ Headers: user-role: OR_COORDINATOR
 GET /surgeries/{surgery_id}
 Headers: user-role: OR_COORDINATOR
 
-# Check readiness (deterministic Python workflow, Phase 1 agents only)
+# Check readiness via the Google ADK orchestration pipeline
+# (all 8 agents; SequentialAgent + ParallelAgent; see "ADK Pipeline" below)
 POST /check-readiness
 Headers: user-role: OR_COORDINATOR
 Body: {
@@ -150,12 +150,22 @@ Body: {
   "user_role": "OR_COORDINATOR",
   "requested_at": "2026-06-29T14:00:00"
 }
+```
 
-# Check readiness via the full Google ADK orchestration pipeline
-# (all 8 agents; SequentialAgent + ParallelAgent; see "ADK Pipeline" below)
-POST /check-readiness/pipeline
+### Clinical Decisions (Accept/Reject)
+```bash
+# Record a clinician's accept/reject decision on one blocker from a
+# readiness report. This is a human sign-off only - it does not recompute
+# readiness_status, it is appended to the immutable audit trail.
+POST /surgeries/{surgery_id}/blockers/decision
 Headers: user-role: OR_COORDINATOR
-Body: (same as above)
+Body: {
+  "category": "BLOOD",
+  "message": "Blood unit BU-1002 is expired",
+  "severity": "CRITICAL",
+  "suggested_action": "Request replacement units from regional blood bank",
+  "decision": "ACCEPT"
+}
 ```
 
 ### Audit Trail
@@ -191,6 +201,14 @@ curl -X POST http://localhost:8000/check-readiness \
 ```
 
 ## Agents
+
+Each agent below is the same `LlmReasoningStage` base agent
+(`backend/src/adk_pipeline/llm_reasoning_stage.py`), configured with its own
+rules file (`backend/src/adk_pipeline/prompts/*.md`) and its own
+deterministically-gathered facts. The stage sends those facts + its rules
+file to the configured LLM endpoint and writes back the JSON verdict it
+returns - there is no separate Python implementation per agent, only a
+different prompt and a different set of facts.
 
 ### 1. Patient Data Agent
 - Extracts patient information from surgery request
@@ -234,36 +252,34 @@ curl -X POST http://localhost:8000/check-readiness \
 - Identifies time-critical constraints
 
 ### 8. Coordinator Agent
-- Deterministically aggregates findings from all agents into the final readiness status (READY/BLOCKED) - never LLM-decided
-- Generates the pre-operative checklist
-- Optionally uses an LLM (Gemini, via Google ADK) to turn the already-finalized structured result into a human-readable narrative briefing - see "ADK Pipeline" below
+- Reads every prior agent's findings and produces the final readiness status (READY/BLOCKED), blockers, and pre-operative checklist
+- Writes the human-readable narrative briefing for the OR coordinator
 
 ## ADK Pipeline
 
-`POST /check-readiness/pipeline` runs the 8-agent architecture above as an
-actual Google ADK orchestration graph (`backend/src/adk_pipeline/`):
+`POST /check-readiness` runs the 8-agent architecture above as an actual
+Google ADK orchestration graph (`backend/src/adk_pipeline/`):
 
 ```
 SequentialAgent(
     PatientDataStage, SafetyConsentStage,
     ParallelAgent(BloodBankStage, OrganStage, EquipmentStage),
-    ValidationStage, LogisticsStage, AggregatorStage,
-    [coordinator_narrator]   # LLM step, gemini-flash-latest
+    ValidationStage, LogisticsStage, CoordinatorStage
 )
 ```
 
-Every stage through `AggregatorStage` is a deterministic `BaseAgent` - no LLM
-involved - so the READY/BLOCKED verdict and blockers can never be
-hallucinated. The **only** LLM step is the final `coordinator_narrator`
-(`Agent` with `model="gemini-flash-latest"`), which reads the
-already-decided, PII-redacted result and writes a short human-readable
-briefing. It cannot change the status.
+Agents fire automatically in this fixed sequence - ADK, not an LLM, decides
+the orchestration/routing. Each stage's own *judgment* (extraction, safety
+checks, availability, validation, the final verdict) is an LLM call against
+that stage's prompt file, using the configured OpenAI-compatible endpoint
+(`OPENROUTER_API_BASE` / `OPENROUTER_API_KEY` / `LLM_MODEL` in
+`backend/.env` - default: gpt-oss-120b via OpenRouter, free tier). Because
+every stage is LLM-driven, **the resulting report is decision-support only
+and always requires human review** before any clinical action is taken -
+see `review_required` on the response and the disclaimer on every endpoint.
 
-The LLM step only runs if `GOOGLE_API_KEY` (or Vertex AI credentials) is set
-in `backend/.env` (see `backend/.env.example`). Without it, the pipeline
-still runs end-to-end and returns a template-based narrative instead - check
-`adk_coordinator_llm_configured` on `GET /health` or `coordinator_used_llm`
-on the pipeline response to see which mode is active.
+Check `llm_pipeline_configured` on `GET /health` to confirm
+`OPENROUTER_API_KEY` is set before calling `/check-readiness`.
 
 ## Security Features
 
@@ -405,8 +421,9 @@ curl -X POST http://localhost:8000/check-readiness \
 - ✅ Equipment Agent (full implementation)
 - ✅ Validation Agent
 - ✅ Logistics Agent
-- ✅ Coordinator Agent (deterministic aggregation + optional LLM narrative)
-- ✅ Google ADK orchestration pipeline (`POST /check-readiness/pipeline`)
+- ✅ Coordinator Agent (LLM-driven aggregation and narrative)
+- ✅ Google ADK orchestration pipeline (`POST /check-readiness`)
+- ✅ Per-blocker human accept/reject decisions (`POST /surgeries/{surgery_id}/blockers/decision`)
 - ⬜ Frontend enhancements
 - ⬜ Integration tests
 
@@ -423,8 +440,8 @@ curl -X POST http://localhost:8000/check-readiness \
 2. **Human Review Required**: All outputs must be reviewed by qualified personnel
 3. **Mock Data Only**: Current implementation uses mock data for demonstration
 4. **PII Protection**: All personally identifiable information is redacted in logs
-5. **Immutable Audit Trail**: All actions are permanently logged
-6. **Decision Support Only**: System provides recommendations only
+5. **Immutable Audit Trail**: All actions are permanently logged, including every clinician accept/reject decision on a reported blocker
+6. **Decision Support Only**: System provides recommendations only - accepting or rejecting a blocker is a recorded sign-off, it never changes the computed readiness status
 
 ## License
 

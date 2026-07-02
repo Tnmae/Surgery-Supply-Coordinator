@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { checkReadiness, fetchAudit, fetchSurgery, fetchSurgeries } from './api';
+import { checkReadiness, fetchAudit, fetchSurgery, fetchSurgeries, submitBlockerDecision } from './api';
 
 const roles = ['OR_COORDINATOR', 'SUPPLY_ADMIN', 'BLOOD_BANK_TECH', 'VIEWER'];
 
@@ -15,6 +15,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState('');
   const [surgeryDetail, setSurgeryDetail] = useState(null);
   const [readiness, setReadiness] = useState(null);
+  const [blockerDecisions, setBlockerDecisions] = useState({});
   const [auditTrail, setAuditTrail] = useState([]);
   const [auditLimit, setAuditLimit] = useState(100);
   const [activeTab, setActiveTab] = useState('surgeries');
@@ -57,11 +58,22 @@ export default function App() {
     try {
       const data = await checkReadiness(role, id);
       setReadiness(data);
+      setBlockerDecisions({});
       setActiveTab('readiness');
     } catch (err) {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function decideBlocker(blocker, idx, decision) {
+    setError('');
+    try {
+      await submitBlockerDecision(role, selectedId, blocker, decision);
+      setBlockerDecisions((prev) => ({ ...prev, [idx]: decision }));
+    } catch (err) {
+      setError(err.message);
     }
   }
 
@@ -188,13 +200,35 @@ export default function App() {
               {readiness.blockers?.length > 0 && (
                 <div className="stack">
                   <h3>Critical Blockers</h3>
-                  {readiness.blockers.map((b, idx) => (
-                    <article key={`${b.category}-${idx}`} className="blocker-card">
-                      <p className="blocker-title">[{b.category}] {b.message}</p>
-                      <p className="blocker-meta">Severity: {b.severity || 'N/A'}</p>
-                      <p className="blocker-meta">Action: {b.suggested_action || 'N/A'}</p>
-                    </article>
-                  ))}
+                  {readiness.blockers.map((b, idx) => {
+                    const decision = blockerDecisions[idx];
+                    return (
+                      <article key={`${b.category}-${idx}`} className="blocker-card">
+                        <p className="blocker-title">[{b.category}] {b.message}</p>
+                        <p className="blocker-meta">Severity: {b.severity || 'N/A'}</p>
+                        <p className="blocker-meta">Action: {b.suggested_action || 'N/A'}</p>
+                        <div className="decision-actions">
+                          <button
+                            className="btn-accept"
+                            disabled={decision === 'ACCEPT'}
+                            onClick={() => decideBlocker(b, idx, 'ACCEPT')}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="btn-reject"
+                            disabled={decision === 'REJECT'}
+                            onClick={() => decideBlocker(b, idx, 'REJECT')}
+                          >
+                            Reject
+                          </button>
+                          <span className={`decision-badge ${decision ? decision.toLowerCase() : 'pending'}`}>
+                            {decision === 'ACCEPT' ? 'Accepted' : decision === 'REJECT' ? 'Rejected' : 'Pending review'}
+                          </span>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               )}
 
