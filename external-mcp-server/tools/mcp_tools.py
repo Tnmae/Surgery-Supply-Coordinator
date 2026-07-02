@@ -1,7 +1,9 @@
 import logging
+import os
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import TypeAdapter
 
 from repository.database_repo import MedicalRepository
@@ -12,8 +14,32 @@ from models.schemas import (
 
 logger = logging.getLogger("mcp-tools")
 
+# Configure Transport Security (DNS Rebinding Protection) for Vercel/Production deployment
+allowed_hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
+allowed_origins = ["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"]
+
+# Allow Vercel production domain
+vercel_prod = "external-medical-mcp.vercel.app"
+allowed_hosts.extend([vercel_prod, f"{vercel_prod}:*"])
+allowed_origins.extend([f"https://{vercel_prod}", f"http://{vercel_prod}"])
+
+# Allow dynamic Vercel URLs (e.g. preview/branch deploys)
+for env_var in ["VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL"]:
+    val = os.environ.get(env_var)
+    if val:
+        host_val = val.replace("https://", "").replace("http://", "").strip("/")
+        if host_val:
+            allowed_hosts.extend([host_val, f"{host_val}:*"])
+            allowed_origins.extend([f"https://{host_val}", f"http://{host_val}"])
+
+transport_security = TransportSecuritySettings(
+    enable_dns_rebinding_protection=True,
+    allowed_hosts=list(set(allowed_hosts)),
+    allowed_origins=list(set(allowed_origins)),
+)
+
 # Initialize FastMCP
-mcp = FastMCP("Critical-Medical-Resources")
+mcp = FastMCP("Critical-Medical-Resources", transport_security=transport_security)
 
 # Initialize Repository
 repo = MedicalRepository()
