@@ -299,7 +299,7 @@ curl -X POST http://localhost:8000/check-readiness \
 
 ## MCP Servers
 
-The system includes mock implementations of these MCP-style servers:
+The backend includes local wrappers for the core coordination flow, and this branch also adds a standalone external MCP server backed by SQLite for resource queries:
 
 ### blood_bank_mcp
 - `query_blood_availability()`: Check availability by blood type
@@ -323,6 +323,12 @@ The system includes mock implementations of these MCP-style servers:
 - `query_organ_availability()`: Check regional organ availability
 - `request_blood_transfer()`: Request blood from regional network
 - `request_organ_transfer()`: Request organ from regional network
+
+### external-mcp-server
+- `search_blood_inventory()`: Remote blood inventory lookup over MCP SSE
+- `search_organ_registry()`: Remote organ registry lookup over MCP SSE
+- `search_equipment()`: Remote equipment lookup over MCP SSE
+- Backed by SQLite and exposed through `/mcp/sse`
 
 ## Configuration
 
@@ -356,7 +362,7 @@ curl -X POST http://localhost:8000/check-readiness \
 
 ## Roadmap
 
-### Phase 1 ✅ (Current)
+### Phase 1 ✅ (Complete)
 - ✅ Project structure and Pydantic models
 - ✅ Mock data with demo scenarios
 - ✅ MCP-style mock servers
@@ -368,18 +374,18 @@ curl -X POST http://localhost:8000/check-readiness \
 - ✅ PII redaction and RBAC
 - ✅ Audit logging
 
-### Phase 2 (Next)
-- ⬜ Organ Agent (full implementation)
-- ⬜ Equipment Agent (full implementation)
-- ⬜ Validation Agent
-- ⬜ Logistics Agent
-- ⬜ Coordinator Agent
-- ⬜ Frontend enhancements
-- ⬜ Integration tests
+### Phase 2 ✅ (Complete)
+- ✅ Organ Agent (full implementation)
+- ✅ Equipment Agent (full implementation)
+- ✅ Validation Agent
+- ✅ Logistics Agent
+- ✅ Coordinator Agent
+- ✅ Frontend enhancements
+- ✅ Integration tests
 
-### Phase 3 (Future)
-- ⬜ Database backend (SQLite or PostgreSQL)
-- ⬜ Real MCP server implementation
+### Phase 3 🚧 (In Progress on `feature/mcp`)
+- ✅ Database backend (SQLite)
+- ✅ Real MCP server implementation
 - ⬜ Advanced reporting and analytics
 - ⬜ Performance optimization
 - ⬜ Production deployment configuration
