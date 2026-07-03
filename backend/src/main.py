@@ -1,22 +1,24 @@
 """FastAPI main application and endpoints."""
 
 import logging
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, Header, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 
+load_dotenv()
+
 from src.config import Config
 from src.data.repository import DataRepository
-from src.models.report import ReadinessCheckRequest, ReadinessCheckResponse, ReadinessReport, ReadinessStatus
+from src.models.report import ReadinessCheckRequest, ReadinessCheckResponse, ReadinessReport, BlockerDecisionRequest
 from src.models.surgery import Surgery, SurgeryDetail
 from src.security.rbac import RBAC, Permission
 from src.security.audit_logger import AuditLogger
-from src.agents.patient_data_agent import PatientDataAgent
-from src.agents.safety_consent_agent import SafetyConsentAgent
-from src.agents.blood_bank_agent import BloodBankAgent
+from src.adk_pipeline.llm_pipeline import run_llm_readiness_pipeline
 
 
 # Configure logging
@@ -47,9 +49,6 @@ app.add_middleware(
 # Initialize services
 repository = DataRepository(Config.MOCK_DATA_FILE)
 audit_logger = AuditLogger(Config.AUDIT_LOG_FILE)
-patient_data_agent = PatientDataAgent(repository, audit_logger)
-safety_consent_agent = SafetyConsentAgent(repository, audit_logger)
-blood_bank_agent = BloodBankAgent(repository=repository, audit_logger=audit_logger)
 
 
 # ===== Dependencies =====
@@ -85,7 +84,8 @@ async def health_check() -> dict:
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "service": Config.APP_NAME,
-        "version": Config.APP_VERSION
+        "version": Config.APP_VERSION,
+        "llm_pipeline_configured": bool(os.environ.get("OPENROUTER_API_KEY")),
     }
 
 
@@ -136,139 +136,69 @@ async def check_readiness(
     user_role: str = Depends(check_readiness_permission)
 ) -> dict:
     """
-    Check if a surgery is ready to proceed.
-    
-    This endpoint runs the readiness workflow and returns a comprehensive report.
-    All outputs require review by qualified clinical personnel.
-    
+    Check surgery readiness using the LLM-per-agent Google ADK orchestration pipeline:
+
+    Patient Data -> Safety/Consent -> [Blood | Organ | Equipment] (parallel)
+    -> Validation -> Logistics -> Coordinator -> human review.
+
+    Agents fire automatically in this sequence; every stage is its own call
+    to the configured LLM endpoint (gpt-oss-120b via OpenRouter - see
+    backend/.env), guided by that agent's own rules file under
+    src/adk_pipeline/prompts/. The resulting report still requires review by
+    qualified clinical personnel before any action is taken. Requires
+    OPENROUTER_API_KEY to be set in backend/.env.
+
     Required header: user-role (must be OR_COORDINATOR or SUPPLY_ADMIN)
     """
     surgery_id = request.surgery_id
-    
-    try:
-        # Log the check request
-        audit_logger.log_action(
-            action="CHECK_READINESS_REQUESTED",
-            actor_role=user_role,
-            entity_type="SURGERY",
-            entity_id=surgery_id,
-            details={"timestamp": request.requested_at.isoformat()}
-        )
-        
-        # Get surgery
-        surgery_dict = repository.get_surgery(surgery_id)
-        if not surgery_dict:
-            raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
-        
-        # PHASE 1: Patient Data Extraction
-        from src.models.surgery import SurgeryRequest
-        surgery_request = SurgeryRequest(**surgery_dict)
-        extraction_result = patient_data_agent.extract_patient_data(surgery_request, surgery_id)
-        
-        if not extraction_result.extraction_successful:
-            return add_disclaimer({
-                "success": False,
-                "message": "Patient data extraction failed",
-                "errors": extraction_result.warnings,
-                "readiness_status": "BLOCKED",
-                "timestamp": datetime.utcnow().isoformat()
-            })
-        
-        # PHASE 2: Safety and Consent Check
-        passed, blockers, warnings = safety_consent_agent.check_safety_and_consent(
-            extraction_result.extracted_data,
-            surgery_id,
-            surgery_dict['surgery_type']
-        )
-        
-        if not passed:
-            return add_disclaimer({
-                "success": False,
-                "message": "Safety/Consent check failed",
-                "readiness_status": "BLOCKED",
-                "blockers": [
-                    {
-                        "category": b.category,
-                        "severity": b.severity,
-                        "message": b.message,
-                        "suggested_action": b.suggested_action
-                    }
-                    for b in blockers
-                ],
-                "warnings": warnings,
-                "timestamp": datetime.utcnow().isoformat()
-            })
-        
-        # PHASE 3: Blood Bank Check
-        blood_available, blood_status, blood_blockers = blood_bank_agent.check_blood_availability(
-            surgery_dict['required_blood_type'],
-            surgery_dict['required_blood_units'],
-            surgery_id,
-            surgery_dict['patient_id']
-        )
-        
-        all_blockers = blockers + blood_blockers
-        
-        # Determine readiness
-        if not blood_available or not passed:
-            readiness_status = ReadinessStatus.BLOCKED
-        else:
-            readiness_status = ReadinessStatus.READY
-        
-        # Build response
-        response = {
-            "success": True,
-            "message": f"Readiness check completed - Status: {readiness_status}",
-            "readiness_status": readiness_status,
-            "surgery_id": surgery_id,
-            "patient_id": surgery_dict['patient_id'],
-            "scheduled_time": surgery_dict['scheduled_time'],
-            "blood_status": blood_status.model_dump(),
-            "blockers": [
-                {
-                    "category": b.category,
-                    "severity": b.severity.value,
-                    "message": b.message,
-                    "suggested_action": b.suggested_action
-                }
-                for b in all_blockers
-            ],
-            "warnings": warnings + extraction_result.warnings,
-            "timestamp": datetime.utcnow().isoformat(),
-            "review_required": True
-        }
-        
-        audit_logger.log_action(
-            action="CHECK_READINESS_COMPLETED",
-            actor_role=user_role,
-            entity_type="SURGERY",
-            entity_id=surgery_id,
-            details={"status": readiness_status},
-            result="SUCCESS"
-        )
-        
-        return add_disclaimer(response)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error checking readiness for {surgery_id}: {str(e)}")
-        
-        audit_logger.log_action(
-            action="CHECK_READINESS_ERROR",
-            actor_role=user_role,
-            entity_type="SURGERY",
-            entity_id=surgery_id,
-            error=str(e),
-            result="FAILURE"
-        )
-        
-        return add_disclaimer({
-            "success": False,
-            "message": "Error checking readiness",
-            "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
-        })
+
+    audit_logger.log_action(
+        action="CHECK_READINESS_REQUESTED",
+        actor_role=user_role,
+        entity_type="SURGERY",
+        entity_id=surgery_id,
+        details={"timestamp": request.requested_at.isoformat()},
+    )
+
+    surgery_dict = repository.get_surgery(surgery_id)
+    if not surgery_dict:
+        raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
+
+    report = await run_llm_readiness_pipeline(surgery_id, user_role, repository, audit_logger)
+    return add_disclaimer(report)
+
+
+@app.post("/surgeries/{surgery_id}/blockers/decision")
+async def record_blocker_decision(
+    surgery_id: str,
+    request: BlockerDecisionRequest,
+    user_role: str = Depends(check_readiness_permission),
+) -> dict:
+    """
+    Record a clinician's accept/reject decision on a single blocker from a
+    readiness report. This does not recompute readiness_status - the pipeline's
+    verdict stands as-is. It is purely a human sign-off, appended to the
+    existing immutable audit trail (see GET /audit/{surgery_id}).
+
+    Required header: user-role (must be OR_COORDINATOR or SUPPLY_ADMIN)
+    """
+    entry_id = audit_logger.log_action(
+        action="BLOCKER_DECISION",
+        actor_role=user_role,
+        entity_type="SURGERY",
+        entity_id=surgery_id,
+        details=request.model_dump(),
+        result=request.decision,
+    )
+
+    return add_disclaimer({
+        "success": True,
+        "entry_id": entry_id,
+        "surgery_id": surgery_id,
+        "category": request.category,
+        "decision": request.decision,
+        "timestamp": datetime.utcnow().isoformat(),
+    })
 
 
 @app.get("/audit/{surgery_id}")

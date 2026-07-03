@@ -305,6 +305,70 @@ h2, h3 {
   color: #ffd7e2;
 }
 
+.decision-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-accept,
+.btn-reject {
+  border: none;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-accept {
+  background: rgba(61, 220, 151, 0.85);
+  color: #032a2d;
+}
+
+.btn-reject {
+  background: rgba(255, 111, 145, 0.85);
+  color: #390013;
+}
+
+.btn-accept:hover,
+.btn-reject:hover {
+  transform: translateY(-1px);
+}
+
+.btn-accept:disabled,
+.btn-reject:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.decision-badge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  margin-left: auto;
+}
+
+.decision-badge.pending {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--muted);
+}
+
+.decision-badge.accept {
+  background: rgba(61, 220, 151, 0.22);
+  color: #b6ffdf;
+}
+
+.decision-badge.reject {
+  background: rgba(255, 111, 145, 0.22);
+  color: #ffd7e2;
+}
+
 .chip {
   border-radius: 999px;
   padding: 6px 10px;

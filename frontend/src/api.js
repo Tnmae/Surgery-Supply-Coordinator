@@ -43,3 +43,18 @@ export async function fetchAudit(role, surgeryId, limit = 100) {
   const res = await fetch(`${API_BASE}/audit/${surgeryId}?limit=${limit}`, { headers: headers(role) });
   return parse(res);
 }
+
+export async function submitBlockerDecision(role, surgeryId, blocker, decision) {
+  const res = await fetch(`${API_BASE}/surgeries/${surgeryId}/blockers/decision`, {
+    method: 'POST',
+    headers: headers(role),
+    body: JSON.stringify({
+      category: blocker.category,
+      message: blocker.message,
+      severity: blocker.severity,
+      suggested_action: blocker.suggested_action,
+      decision,
+    }),
+  });
+  return parse(res);
+}
