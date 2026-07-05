@@ -52,4 +52,8 @@ class SurgeryDetail(Surgery):
     """Extended surgery detail for API responses."""
     last_updated: datetime
     readiness_report: Optional[dict] = None
+    readiness_review_status: Optional[str] = None
+    blocker_decisions: List[dict] = Field(default_factory=list)
+    readiness_reviewed_at: Optional[datetime] = None
+    reviewed_by_role: Optional[str] = None
     audit_trail: List[dict] = Field(default_factory=list)

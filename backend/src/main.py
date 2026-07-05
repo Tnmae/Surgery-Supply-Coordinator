@@ -136,21 +136,43 @@ async def check_readiness(
     user_role: str = Depends(check_readiness_permission)
 ) -> dict:
     """
-    Check surgery readiness using the LLM-per-agent Google ADK orchestration pipeline:
+    Check surgery readiness using the LLM-per-agent Google ADK orchestration pipeline.
 
-    Patient Data -> Safety/Consent -> [Blood | Organ | Equipment] (parallel)
-    -> Validation -> Logistics -> Coordinator -> human review.
-
-    Agents fire automatically in this sequence; every stage is its own call
-    to the configured LLM endpoint (gpt-oss-120b via OpenRouter - see
-    backend/.env), guided by that agent's own rules file under
-    src/adk_pipeline/prompts/. The resulting report still requires review by
-    qualified clinical personnel before any action is taken. Requires
-    OPENROUTER_API_KEY to be set in backend/.env.
+    If the surgery already has a completed review (RESOLVED or HALT_DUE_TO_BLOCKER)
+    the stored report is returned immediately without re-running the pipeline.
+    Pass force_rerun=true in the request body to override this.
 
     Required header: user-role (must be OR_COORDINATOR or SUPPLY_ADMIN)
     """
     surgery_id = request.surgery_id
+
+    surgery_dict = repository.get_surgery(surgery_id)
+    if not surgery_dict:
+        raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
+
+    # Short-circuit: if the surgery has already been reviewed and a stored report
+    # exists, return it without re-running the expensive pipeline.
+    review_status = surgery_dict.get("readiness_review_status")
+    stored_report = surgery_dict.get("readiness_report")
+    FINAL_STATUSES = {"RESOLVED", "HALT_DUE_TO_BLOCKER"}
+
+    if review_status in FINAL_STATUSES and stored_report and not request.force_rerun:
+        audit_logger.log_action(
+            action="CHECK_READINESS_CACHE_HIT",
+            actor_role=user_role,
+            entity_type="SURGERY",
+            entity_id=surgery_id,
+            details={
+                "review_status": review_status,
+                "cached_at": surgery_dict.get("last_updated"),
+            },
+            result="CACHE_HIT",
+        )
+        cached = dict(stored_report)
+        cached["cached"] = True
+        cached["readiness_review_status"] = review_status
+        cached["blocker_decisions"] = surgery_dict.get("blocker_decisions", [])
+        return add_disclaimer(cached)
 
     audit_logger.log_action(
         action="CHECK_READINESS_REQUESTED",
@@ -160,11 +182,8 @@ async def check_readiness(
         details={"timestamp": request.requested_at.isoformat()},
     )
 
-    surgery_dict = repository.get_surgery(surgery_id)
-    if not surgery_dict:
-        raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
-
     report = await run_llm_readiness_pipeline(surgery_id, user_role, repository, audit_logger)
+    repository.save_readiness_report(surgery_id, report)
     return add_disclaimer(report)
 
 
@@ -191,12 +210,25 @@ async def record_blocker_decision(
         result=request.decision,
     )
 
+    updated_surgery = repository.record_blocker_decision(
+        surgery_id=surgery_id,
+        blocker=request.model_dump(exclude={"decision", "notes"}),
+        decision=request.decision,
+        actor_role=user_role,
+        notes=request.notes,
+    )
+
+    if not updated_surgery:
+        raise HTTPException(status_code=404, detail=f"Surgery {surgery_id} not found")
+
     return add_disclaimer({
         "success": True,
         "entry_id": entry_id,
         "surgery_id": surgery_id,
         "category": request.category,
         "decision": request.decision,
+        "readiness_review_status": updated_surgery.get("readiness_review_status"),
+        "blocker_decisions": updated_surgery.get("blocker_decisions", []),
         "timestamp": datetime.utcnow().isoformat(),
     })
 

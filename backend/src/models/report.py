@@ -82,6 +82,7 @@ class ReadinessCheckRequest(BaseModel):
     surgery_id: str
     user_role: str  # e.g., "OR_COORDINATOR", "SUPPLY_ADMIN"
     requested_at: datetime = Field(default_factory=datetime.utcnow)
+    force_rerun: bool = False  # set True to bypass cached result and re-run the pipeline
 
 
 class ReadinessCheckResponse(BaseModel):

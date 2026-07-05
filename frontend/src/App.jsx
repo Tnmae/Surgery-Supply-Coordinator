@@ -6,7 +6,35 @@ const roles = ['OR_COORDINATOR', 'SUPPLY_ADMIN', 'BLOOD_BANK_TECH', 'VIEWER'];
 function statusClass(status) {
   if (status === 'READY') return 'chip chip-ready';
   if (status === 'BLOCKED') return 'chip chip-blocked';
+  if (status === 'RESOLVED') return 'chip chip-ready';
+  if (status === 'HALT_DUE_TO_BLOCKER') return 'chip chip-blocked';
   return 'chip chip-warning';
+}
+
+/** Map a decision value to its display label. */
+function decisionLabel(d) {
+  if (d === 'ACCEPT') return 'Accepted — Status: Resolved';
+  if (d === 'REJECT') return 'Rejected — Status: Halted';
+  return 'Pending review';
+}
+
+/** Human-readable label for the overall review status. */
+function reviewStatusLabel(status) {
+  if (status === 'RESOLVED') return 'All blockers resolved';
+  if (status === 'HALT_DUE_TO_BLOCKER') return 'Halted — blocker rejected';
+  if (status === 'PENDING_REVIEW') return 'Awaiting review';
+  return status || 'Awaiting review';
+}
+
+/** Small pill shown on each surgery card in the list. */
+function reviewPill(surgery) {
+  const rs = surgery.readiness_review_status;
+  const hasReport = !!surgery.readiness_report;
+  if (!hasReport) return null;
+  if (rs === 'RESOLVED') return { label: 'Resolved', cls: 'pill-resolved' };
+  if (rs === 'HALT_DUE_TO_BLOCKER') return { label: 'Halted', cls: 'pill-halted' };
+  if (rs === 'PENDING_REVIEW') return { label: 'Pending Review', cls: 'pill-pending' };
+  return null;
 }
 
 export default function App() {
@@ -15,12 +43,15 @@ export default function App() {
   const [selectedId, setSelectedId] = useState('');
   const [surgeryDetail, setSurgeryDetail] = useState(null);
   const [readiness, setReadiness] = useState(null);
+  // blockerDecisions: { [idx]: 'ACCEPT' | 'REJECT' }  — seeded from stored decisions on load
   const [blockerDecisions, setBlockerDecisions] = useState({});
   const [auditTrail, setAuditTrail] = useState([]);
   const [auditLimit, setAuditLimit] = useState(100);
   const [activeTab, setActiveTab] = useState('surgeries');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // live review status shown on the readiness tab, kept in sync after every decision
+  const [reviewStatus, setReviewStatus] = useState(null);
 
   const selectedSurgery = useMemo(
     () => surgeries.find((s) => s.surgery_id === selectedId),
@@ -45,20 +76,65 @@ export default function App() {
     setError('');
     try {
       const data = await fetchSurgery(role, id);
-      setSurgeryDetail(data.surgery || null);
+      const detail = data.surgery || null;
+      setSurgeryDetail(detail);
+
+      // If we already have a readiness report loaded for this surgery,
+      // re-hydrate the per-blocker decision badges from the stored record
+      // so they survive tab switches or page refreshes.
+      if (detail && readiness && readiness.blockers) {
+        const stored = detail.blocker_decisions || [];
+        const seeded = {};
+        readiness.blockers.forEach((b, idx) => {
+          const match = stored.find(
+            (d) =>
+              d.category === b.category &&
+              d.message === b.message &&
+              d.severity === (b.severity || null)
+          );
+          if (match) seeded[idx] = match.decision;
+        });
+        setBlockerDecisions(seeded);
+      }
+
+      // Sync the live review status badge
+      if (detail?.readiness_review_status) {
+        setReviewStatus(detail.readiness_review_status);
+      }
     } catch (err) {
       setError(err.message);
     }
   }
 
-  async function runReadiness(id) {
+  async function runReadiness(id, forceRerun = false) {
     if (!id) return;
     setBusy(true);
     setError('');
     try {
-      const data = await checkReadiness(role, id);
+      const data = await checkReadiness(role, id, forceRerun);
       setReadiness(data);
-      setBlockerDecisions({});
+
+      // Seed per-blocker decisions from the stored blocker_decisions list
+      // (populated for both cached reports and live runs where decisions already exist)
+      const storedDecisions = data.blocker_decisions || [];
+      if (data.blockers?.length && storedDecisions.length) {
+        const seeded = {};
+        data.blockers.forEach((b, idx) => {
+          const match = storedDecisions.find(
+            (d) => d.category === b.category && d.message === b.message,
+          );
+          if (match) seeded[idx] = match.decision;
+        });
+        setBlockerDecisions(seeded);
+      } else {
+        setBlockerDecisions({});
+      }
+
+      // Derive review status: prefer what the backend stored, fall back to pipeline status
+      const rs = data.readiness_review_status
+        || (data.readiness_status === 'READY' ? 'RESOLVED' : 'PENDING_REVIEW');
+      setReviewStatus(rs);
+
       setActiveTab('readiness');
     } catch (err) {
       setError(err.message);
@@ -70,8 +146,15 @@ export default function App() {
   async function decideBlocker(blocker, idx, decision) {
     setError('');
     try {
-      await submitBlockerDecision(role, selectedId, blocker, decision);
+      const result = await submitBlockerDecision(role, selectedId, blocker, decision);
+      // Update the per-blocker badge immediately
       setBlockerDecisions((prev) => ({ ...prev, [idx]: decision }));
+      // Update the overall review status from what the backend computed
+      if (result.readiness_review_status) {
+        setReviewStatus(result.readiness_review_status);
+      }
+      // Refresh the surgery detail so the stored decisions stay in sync
+      await loadSurgeryDetail(selectedId);
     } catch (err) {
       setError(err.message);
     }
@@ -97,6 +180,10 @@ export default function App() {
   }, [role]);
 
   useEffect(() => {
+    // Reset readiness state when switching surgery so stale decisions don't bleed over
+    setReadiness(null);
+    setBlockerDecisions({});
+    setReviewStatus(null);
     loadSurgeryDetail(selectedId);
   }, [selectedId, role]);
 
@@ -142,38 +229,71 @@ export default function App() {
               <button className="btn ghost" onClick={loadSurgeries}>Refresh</button>
             </div>
             <div className="surgery-list">
-              {surgeries.map((s) => (
-                <button
-                  key={s.surgery_id}
-                  className={s.surgery_id === selectedId ? 'surgery-card selected' : 'surgery-card'}
-                  onClick={() => setSelectedId(s.surgery_id)}
-                >
-                  <div>
-                    <p className="surgery-id">{s.surgery_id}</p>
-                    <p className="surgery-meta">{s.surgery_type}</p>
-                    <p className="surgery-meta">{new Date(s.scheduled_time).toLocaleString()}</p>
-                  </div>
-                  <div className="tiny-pill">{s.required_blood_type} · {s.required_blood_units}u</div>
-                </button>
-              ))}
+              {surgeries.map((s) => {
+                const pill = reviewPill(s);
+                return (
+                  <button
+                    key={s.surgery_id}
+                    className={s.surgery_id === selectedId ? 'surgery-card selected' : 'surgery-card'}
+                    onClick={() => setSelectedId(s.surgery_id)}
+                  >
+                    <div className="surgery-card-main">
+                      <p className="surgery-id">{s.surgery_id}</p>
+                      <p className="surgery-meta">{s.surgery_type}</p>
+                      <p className="surgery-meta">{new Date(s.scheduled_time).toLocaleString()}</p>
+                    </div>
+                    <div className="surgery-card-right">
+                      <div className="tiny-pill">{s.required_blood_type} · {s.required_blood_units}u</div>
+                      {pill && (
+                        <span className={`review-pill ${pill.cls}`}>{pill.label}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </article>
 
           <article className="panel">
             <div className="panel-header">
               <h2>Selected Surgery</h2>
-              <button className="btn" disabled={!selectedId || busy} onClick={() => runReadiness(selectedId)}>
-                {busy ? 'Running...' : 'Run Readiness Check'}
-              </button>
+              <div className="header-chips">
+                {surgeryDetail?.readiness_review_status && surgeryDetail?.readiness_report && (
+                  <span className={statusClass(surgeryDetail.readiness_review_status)}>
+                    {reviewStatusLabel(surgeryDetail.readiness_review_status)}
+                  </span>
+                )}
+                <button
+                  className="btn"
+                  disabled={!selectedId || busy}
+                  onClick={() => runReadiness(selectedId)}
+                >
+                  {busy ? 'Running...' : 'Run Readiness Check'}
+                </button>
+              </div>
             </div>
             {surgeryDetail ? (
-              <div className="detail-grid">
-                <p><strong>ID:</strong> {surgeryDetail.surgery_id}</p>
-                <p><strong>Patient:</strong> {surgeryDetail.patient_id}</p>
-                <p><strong>Type:</strong> {surgeryDetail.surgery_type}</p>
-                <p><strong>Scheduled:</strong> {new Date(surgeryDetail.scheduled_time).toLocaleString()}</p>
-                <p><strong>Blood:</strong> {surgeryDetail.required_blood_type} ({surgeryDetail.required_blood_units} units)</p>
-                <p><strong>Duration:</strong> {surgeryDetail.estimated_duration_minutes} minutes</p>
+              <div>
+                <div className="detail-grid">
+                  <p><strong>ID:</strong> {surgeryDetail.surgery_id}</p>
+                  <p><strong>Patient:</strong> {surgeryDetail.patient_id}</p>
+                  <p><strong>Type:</strong> {surgeryDetail.surgery_type}</p>
+                  <p><strong>Scheduled:</strong> {new Date(surgeryDetail.scheduled_time).toLocaleString()}</p>
+                  <p><strong>Blood:</strong> {surgeryDetail.required_blood_type} ({surgeryDetail.required_blood_units} units)</p>
+                  <p><strong>Duration:</strong> {surgeryDetail.estimated_duration_minutes} minutes</p>
+                </div>
+                {surgeryDetail.readiness_report && (
+                  <div className="cached-notice">
+                    <span>A readiness report exists for this surgery.</span>
+                    <button
+                      className="btn-rerun"
+                      disabled={busy}
+                      onClick={() => runReadiness(selectedId, true)}
+                    >
+                      {busy ? 'Running...' : 'Force Re-run'}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="muted">Select a surgery to view details.</p>
@@ -186,15 +306,48 @@ export default function App() {
         <section className="panel single">
           <div className="panel-header">
             <h2>Readiness Report</h2>
-            {readiness?.readiness_status && (
-              <span className={statusClass(readiness.readiness_status)}>{readiness.readiness_status}</span>
-            )}
+            <div className="header-chips">
+              {readiness?.readiness_status && (
+                <span className={statusClass(readiness.readiness_status)}>
+                  {readiness.readiness_status}
+                </span>
+              )}
+              {reviewStatus && (
+                <span className={`chip review-status-chip ${statusClass(reviewStatus).replace('chip ', '')}`}>
+                  {reviewStatusLabel(reviewStatus)}
+                </span>
+              )}
+              {readiness?.cached && (
+                <span className="chip chip-cached">Cached report</span>
+              )}
+            </div>
           </div>
 
           {!readiness && <p className="muted">Run a readiness check from Surgeries.</p>}
 
           {readiness && (
             <>
+              {readiness.cached && (
+                <div className="cached-report-notice">
+                  <span>
+                    This report was completed on{' '}
+                    <strong>
+                      {surgeryDetail?.last_updated
+                        ? new Date(surgeryDetail.last_updated).toLocaleString()
+                        : 'a previous session'}
+                    </strong>
+                    . The pipeline was not re-run.
+                  </span>
+                  <button
+                    className="btn-rerun"
+                    disabled={busy}
+                    onClick={() => runReadiness(selectedId, true)}
+                  >
+                    {busy ? 'Running...' : 'Force Re-run'}
+                  </button>
+                </div>
+              )}
+
               <p className="lead">{readiness.message || 'Readiness report generated.'}</p>
 
               {readiness.blockers?.length > 0 && (
@@ -202,34 +355,56 @@ export default function App() {
                   <h3>Critical Blockers</h3>
                   {readiness.blockers.map((b, idx) => {
                     const decision = blockerDecisions[idx];
+                    const isResolved = decision === 'ACCEPT';
+                    const isHalted = decision === 'REJECT';
                     return (
-                      <article key={`${b.category}-${idx}`} className="blocker-card">
-                        <p className="blocker-title">[{b.category}] {b.message}</p>
+                      <article
+                        key={`${b.category}-${idx}`}
+                        className={`blocker-card ${isResolved ? 'blocker-resolved' : isHalted ? 'blocker-halted' : ''}`}
+                      >
+                        <div className="blocker-card-header">
+                          <p className="blocker-title">[{b.category}] {b.message}</p>
+                          {decision && (
+                            <span className={`blocker-status-tag ${isResolved ? 'tag-resolved' : 'tag-halted'}`}>
+                              {isResolved ? '✓ Status: Resolved' : '✕ Status: Halted'}
+                            </span>
+                          )}
+                        </div>
                         <p className="blocker-meta">Severity: {b.severity || 'N/A'}</p>
                         <p className="blocker-meta">Action: {b.suggested_action || 'N/A'}</p>
                         <div className="decision-actions">
                           <button
                             className="btn-accept"
-                            disabled={decision === 'ACCEPT'}
+                            disabled={!!decision}
                             onClick={() => decideBlocker(b, idx, 'ACCEPT')}
                           >
                             Accept
                           </button>
                           <button
                             className="btn-reject"
-                            disabled={decision === 'REJECT'}
+                            disabled={!!decision}
                             onClick={() => decideBlocker(b, idx, 'REJECT')}
                           >
                             Reject
                           </button>
                           <span className={`decision-badge ${decision ? decision.toLowerCase() : 'pending'}`}>
-                            {decision === 'ACCEPT' ? 'Accepted' : decision === 'REJECT' ? 'Rejected' : 'Pending review'}
+                            {decisionLabel(decision)}
                           </span>
                         </div>
                       </article>
                     );
                   })}
                 </div>
+              )}
+
+              {/* Overall review outcome banner — shown once all blockers have a decision */}
+              {readiness.blockers?.length > 0 &&
+                Object.keys(blockerDecisions).length === readiness.blockers.length && (
+                  <div className={`review-outcome-banner ${reviewStatus === 'RESOLVED' ? 'outcome-resolved' : 'outcome-halted'}`}>
+                    {reviewStatus === 'RESOLVED'
+                      ? '✓ All blockers have been reviewed and resolved. Cleared for clinical sign-off.'
+                      : '✕ One or more blockers were rejected. Surgery is halted pending further review.'}
+                  </div>
               )}
 
               {readiness.warnings?.length > 0 && (

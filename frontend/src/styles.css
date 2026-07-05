@@ -369,6 +369,184 @@ h2, h3 {
   color: #ffd7e2;
 }
 
+/* ===== Blocker resolved/halted states ===== */
+
+.blocker-card.blocker-resolved {
+  background: rgba(61, 220, 151, 0.08);
+  border-color: rgba(61, 220, 151, 0.4);
+}
+
+.blocker-card.blocker-halted {
+  background: rgba(255, 100, 60, 0.1);
+  border-color: rgba(255, 100, 60, 0.42);
+}
+
+.blocker-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.blocker-status-tag {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tag-resolved {
+  background: rgba(61, 220, 151, 0.22);
+  color: #b6ffdf;
+}
+
+.tag-halted {
+  background: rgba(255, 100, 60, 0.22);
+  color: #ffd4c8;
+}
+
+/* ===== Review outcome banner ===== */
+
+.review-outcome-banner {
+  margin-top: 14px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  backdrop-filter: blur(8px);
+  animation: rise 0.3s ease-out;
+}
+
+.outcome-resolved {
+  background: rgba(61, 220, 151, 0.14);
+  border: 1px solid rgba(61, 220, 151, 0.45);
+  color: #b6ffdf;
+}
+
+.outcome-halted {
+  background: rgba(255, 100, 60, 0.12);
+  border: 1px solid rgba(255, 100, 60, 0.45);
+  color: #ffd4c8;
+}
+
+/* ===== Surgery card review pills ===== */
+
+.surgery-card-main {
+  flex: 1;
+}
+
+.surgery-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.review-pill {
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pill-resolved {
+  background: rgba(61, 220, 151, 0.2);
+  color: #b6ffdf;
+  border: 1px solid rgba(61, 220, 151, 0.4);
+}
+
+.pill-halted {
+  background: rgba(255, 100, 60, 0.18);
+  color: #ffd4c8;
+  border: 1px solid rgba(255, 100, 60, 0.38);
+}
+
+.pill-pending {
+  background: rgba(255, 200, 87, 0.18);
+  color: #ffe8b3;
+  border: 1px solid rgba(255, 200, 87, 0.38);
+}
+
+/* ===== Cached report notice ===== */
+
+.cached-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 194, 255, 0.08);
+  border: 1px solid rgba(0, 194, 255, 0.28);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.cached-report-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 194, 255, 0.08);
+  border: 1px solid rgba(0, 194, 255, 0.28);
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.btn-rerun {
+  border: 1px solid rgba(0, 194, 255, 0.5);
+  background: rgba(0, 194, 255, 0.14);
+  color: #d7f6ff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.btn-rerun:hover {
+  background: rgba(0, 194, 255, 0.26);
+  transform: translateY(-1px);
+}
+
+.btn-rerun:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.chip-cached {
+  background: rgba(0, 194, 255, 0.14);
+  color: #d7f6ff;
+  border: 1px solid rgba(0, 194, 255, 0.3);
+}
+
+/* ===== Shared panel header chip row ===== */
+
+.header-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.review-status-chip {
+  font-size: 0.72rem;
+}
+
 .chip {
   border-radius: 999px;
   padding: 6px 10px;

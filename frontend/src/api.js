@@ -26,7 +26,7 @@ export async function fetchSurgery(role, surgeryId) {
   return parse(res);
 }
 
-export async function checkReadiness(role, surgeryId) {
+export async function checkReadiness(role, surgeryId, forceRerun = false) {
   const res = await fetch(`${API_BASE}/check-readiness`, {
     method: 'POST',
     headers: headers(role),
@@ -34,6 +34,7 @@ export async function checkReadiness(role, surgeryId) {
       surgery_id: surgeryId,
       user_role: role,
       requested_at: new Date().toISOString(),
+      force_rerun: forceRerun,
     }),
   });
   return parse(res);

@@ -27,6 +27,26 @@ class DataRepository:
         """Save data to JSON file."""
         with open(self.data_file, 'w') as f:
             json.dump(self.data, f, indent=2, default=str)
+
+    def _find_surgery_index(self, surgery_id: str) -> Optional[int]:
+        """Find the index of a surgery in the backing store."""
+        surgeries = self.data.get('surgeries', [])
+        for index, surgery in enumerate(surgeries):
+            if surgery.get('surgery_id') == surgery_id:
+                return index
+        return None
+
+    def _update_surgery_record(self, surgery_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Apply a partial update to a surgery record and persist it."""
+        surgery_index = self._find_surgery_index(surgery_id)
+        if surgery_index is None:
+            return None
+
+        surgery = self.data['surgeries'][surgery_index]
+        surgery.update(updates)
+        surgery['last_updated'] = datetime.utcnow().isoformat()
+        self._save_data()
+        return surgery
     
     # ===== Surgery methods =====
     
@@ -36,6 +56,89 @@ class DataRepository:
             if surg['surgery_id'] == surgery_id:
                 return surg
         return None
+
+    def save_readiness_report(self, surgery_id: str, report: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Persist the latest readiness report for a surgery."""
+        return self._update_surgery_record(
+            surgery_id,
+            {
+                'readiness_report': report,
+                'readiness_review_status': 'PENDING_REVIEW',
+                'blocker_decisions': self.get_surgery(surgery_id).get('blocker_decisions', []) if self.get_surgery(surgery_id) else [],
+            },
+        )
+
+    def record_blocker_decision(
+        self,
+        surgery_id: str,
+        blocker: Dict[str, Any],
+        decision: str,
+        actor_role: str,
+        notes: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Persist a clinician blocker decision and derive the overall review status."""
+        surgery = self.get_surgery(surgery_id)
+        if not surgery:
+            return None
+
+        decisions = list(surgery.get('blocker_decisions', []))
+        decision_entry = {
+            'category': blocker.get('category'),
+            'message': blocker.get('message'),
+            'severity': blocker.get('severity'),
+            'suggested_action': blocker.get('suggested_action'),
+            'decision': decision,
+            'notes': notes,
+            'acted_by_role': actor_role,
+            'acted_at': datetime.utcnow().isoformat(),
+        }
+
+        blocker_key = (
+            blocker.get('category'),
+            blocker.get('message'),
+            blocker.get('severity'),
+        )
+
+        filtered_decisions = [
+            item for item in decisions
+            if (
+                item.get('category'),
+                item.get('message'),
+                item.get('severity'),
+            ) != blocker_key
+        ]
+        filtered_decisions.append(decision_entry)
+
+        readiness_report = surgery.get('readiness_report') or {}
+        blockers = readiness_report.get('blockers', []) or []
+        blocker_index = {
+            (item.get('category'), item.get('message'), item.get('severity')): item
+            for item in blockers
+        }
+
+        review_status = 'PENDING_REVIEW'
+        if any(item.get('decision') == 'REJECT' for item in filtered_decisions):
+            review_status = 'HALT_DUE_TO_BLOCKER'
+        elif blockers:
+            accepted_blockers = {
+                (item.get('category'), item.get('message'), item.get('severity'))
+                for item in filtered_decisions
+                if item.get('decision') == 'ACCEPT'
+            }
+            if accepted_blockers.issuperset(blocker_index.keys()):
+                review_status = 'RESOLVED'
+        elif decision == 'ACCEPT':
+            review_status = 'RESOLVED'
+
+        return self._update_surgery_record(
+            surgery_id,
+            {
+                'blocker_decisions': filtered_decisions,
+                'readiness_review_status': review_status,
+                'readiness_reviewed_at': datetime.utcnow().isoformat(),
+                'reviewed_by_role': actor_role,
+            },
+        )
     
     def get_all_surgeries(self) -> List[Dict]:
         """Get all surgeries."""
