@@ -40,6 +40,9 @@ def _provider() -> str:
     if os.environ.get("OLLAMA_BASE_URL"):
         return "ollama"
 
+    if os.environ.get("CLOUDFLARE_API_KEY") and os.environ.get("CLOUDFLARE_ACCOUNT_ID"):
+        return "cloudflare"
+
     if os.environ.get("GOOGLE_AI_API_KEY") and not os.environ.get("OPENROUTER_API_KEY"):
         return "google"
 
@@ -58,6 +61,10 @@ def _api_base() -> str:
     if provider == "ollama":
         base = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
         return _normalize_base_url(base)
+
+    # cloudflare and google build their own full URLs — no shared base needed
+    if provider in ("cloudflare", "google"):
+        return ""
 
     base = os.environ.get("OPENROUTER_API_BASE")
     if not base:
@@ -80,6 +87,14 @@ def _api_key() -> str:
     if provider == "ollama":
         return os.environ.get("OLLAMA_API_KEY", "ollama")
 
+    if provider == "cloudflare":
+        key = os.environ.get("CLOUDFLARE_API_KEY")
+        if not key:
+            raise LlmCallError(
+                "CLOUDFLARE_API_KEY is not set. Add it to backend/.env (see backend/.env.example)."
+            )
+        return key
+
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:
         raise LlmCallError(
@@ -94,6 +109,13 @@ def _model() -> str:
 
     if _provider() == "google":
         return os.environ.get("GOOGLE_AI_MODEL") or os.environ.get("LLM_MODEL") or "gemini-2.0-flash"
+
+    if _provider() == "cloudflare":
+        return (
+            os.environ.get("CLOUDFLARE_MODEL")
+            or os.environ.get("LLM_MODEL")
+            or "@cf/meta/llama-3.1-8b-instruct"
+        )
 
     model = os.environ.get("LLM_MODEL")
     if not model:
@@ -262,6 +284,78 @@ def _call_google_json(
     raise LlmCallError(f"LLM call failed after {max_attempts} attempts: {last_error}")
 
 
+def _call_cloudflare_json(
+    system_prompt: str,
+    user_content: str,
+    model: Optional[str],
+    max_tokens: int,
+    temperature: float,
+    timeout_seconds: int,
+    max_attempts: int,
+) -> Dict[str, Any]:
+    """Call Cloudflare Workers AI REST API (not OpenAI-compatible).
+    
+    Docs: https://developers.cloudflare.com/workers-ai/models/
+    """
+    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
+    if not account_id:
+        raise LlmCallError(
+            "CLOUDFLARE_ACCOUNT_ID is not set. Add it to backend/.env (see backend/.env.example)."
+        )
+
+    api_key = _api_key()
+    model_name = model or _model()
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    # Cloudflare Workers AI expects messages array directly (no 'model' field in body)
+    payload = {
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ],
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
+
+    last_error: Optional[Exception] = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{model_name}"
+            logger.info(
+                "[cloudflare] LLM request → %s max_tokens=%d attempt=%d/%d",
+                url, max_tokens, attempt, max_attempts,
+            )
+            response = requests.post(url, json=payload, headers=headers, timeout=timeout_seconds)
+            if response.status_code == 429:
+                raise requests.HTTPError(f"429 rate-limited: {response.text[:300]}", response=response)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Cloudflare response shape: { "result": { "response": "..." }, "success": true }
+            if not data.get("success"):
+                raise LlmCallError(f"Cloudflare API returned success=false: {data}")
+            
+            content = data["result"]["response"]
+            result = _extract_json(content)
+            logger.info(
+                "[cloudflare] LLM response ← HTTP %d, %d chars, parsed OK",
+                response.status_code, len(content),
+            )
+            return result
+        except (requests.RequestException, KeyError, IndexError, LlmCallError) as e:
+            last_error = e
+            is_rate_limited = isinstance(e, requests.HTTPError) and "429" in str(e)
+            logger.warning("LLM call attempt %d/%d failed: %s", attempt, max_attempts, e)
+            if attempt < max_attempts and is_rate_limited:
+                delay = RATE_LIMIT_BACKOFF_SECONDS[min(attempt - 1, len(RATE_LIMIT_BACKOFF_SECONDS) - 1)]
+                logger.info("Rate limited, backing off %ss before retry", delay)
+                time.sleep(delay)
+
+    raise LlmCallError(f"LLM call failed after {max_attempts} attempts: {last_error}")
+
+
 def _extract_json(text: str) -> Dict[str, Any]:
     """Parse the model's raw text as JSON, tolerating markdown code fences."""
     cleaned = text.strip()
@@ -338,5 +432,8 @@ def call_llm_json(
 
     if provider == "google":
         return _call_google_json(system_prompt, user_content, model, max_tokens, temperature, timeout_seconds, max_attempts)
+
+    if provider == "cloudflare":
+        return _call_cloudflare_json(system_prompt, user_content, model, max_tokens, temperature, timeout_seconds, max_attempts)
 
     return _call_openrouter_json(system_prompt, user_content, model, max_tokens, temperature, timeout_seconds, max_attempts)

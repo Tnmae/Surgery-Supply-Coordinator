@@ -99,6 +99,121 @@
       "created_at": "2026-06-29T10:00:00",
       "created_by_role": "OR_COORDINATOR",
       "description": "Crossmatch pending scenario"
+    },
+    {
+      "surgery_id": "SURG008",
+      "patient_id": "PAT008",
+      "surgery_type": "NEUROSURGERY",
+      "scheduled_time": "2026-07-20T08:00:00",
+      "required_blood_type": "B-",
+      "required_blood_units": 3,
+      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE", "NEURO_MICROSCOPE"],
+      "estimated_duration_minutes": 240,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Drug interaction scenario - ASPIRIN + CLOPIDOGREL antiplatelet combination"
+    },
+    {
+      "surgery_id": "SURG009",
+      "patient_id": "PAT009",
+      "surgery_type": "KIDNEY_TRANSPLANT",
+      "scheduled_time": "2026-07-21T09:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 4,
+      "organ_type": "KIDNEY",
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR"],
+      "estimated_duration_minutes": 210,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Kidney transplant - sulfa allergy noted"
+    },
+    {
+      "surgery_id": "SURG010",
+      "patient_id": "PAT010",
+      "surgery_type": "SPINAL_FUSION",
+      "scheduled_time": "2026-07-22T07:30:00",
+      "required_blood_type": "A+",
+      "required_blood_units": 2,
+      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE", "SURGICAL_MICROSCOPE"],
+      "estimated_duration_minutes": 300,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Anticoagulant risk scenario - patient on WARFARIN"
+    },
+    {
+      "surgery_id": "SURG011",
+      "patient_id": "PAT011",
+      "surgery_type": "VASCULAR",
+      "scheduled_time": "2026-07-22T14:00:00",
+      "required_blood_type": "AB-",
+      "required_blood_units": 5,
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "ANESTHESIA_MACHINE"],
+      "estimated_duration_minutes": 180,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Blood shortage scenario + critical drug interaction HEPARIN + WARFARIN + missing transfusion consent"
+    },
+    {
+      "surgery_id": "SURG012",
+      "patient_id": "PAT012",
+      "surgery_type": "EMERGENCY_CESAREAN",
+      "scheduled_time": "2026-07-23T06:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 2,
+      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE", "OVERHEAD_LIGHTS"],
+      "estimated_duration_minutes": 60,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Emergency cesarean - all resources available"
+    },
+    {
+      "surgery_id": "SURG013",
+      "patient_id": "PAT013",
+      "surgery_type": "BARIATRIC",
+      "scheduled_time": "2026-07-24T10:00:00",
+      "required_blood_type": "A-",
+      "required_blood_units": 2,
+      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE"],
+      "estimated_duration_minutes": 120,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Bariatric surgery - no transfusion consent scenario"
+    },
+    {
+      "surgery_id": "SURG014",
+      "patient_id": "PAT014",
+      "surgery_type": "ORGAN_TRANSPLANT",
+      "scheduled_time": "2026-07-25T08:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 4,
+      "organ_type": "PANCREAS",
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "BYPASS_MACHINE"],
+      "estimated_duration_minutes": 360,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Pancreas transplant - latex allergy + immunosuppressant medications"
+    },
+    {
+      "surgery_id": "SURG015",
+      "patient_id": "PAT015",
+      "surgery_type": "PEDIATRIC_CARDIAC",
+      "scheduled_time": "2026-07-27T07:00:00",
+      "required_blood_type": "B+",
+      "required_blood_units": 2,
+      "organ_type": "HEART",
+      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "BYPASS_MACHINE"],
+      "estimated_duration_minutes": 240,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Pediatric cardiac - tight organ viability window near-critical scenario"
     }
   ],
   "blood_units": [
@@ -206,6 +321,162 @@
       "crossmatch_status": "COMPATIBLE",
       "unit_volume_ml": 450,
       "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD011",
+      "blood_type": "B-",
+      "collected_date": "2026-07-01T10:00:00",
+      "expiration_date": "2026-08-14T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG008 - neurosurgery"
+    },
+    {
+      "unit_id": "BLOOD012",
+      "blood_type": "B-",
+      "collected_date": "2026-07-01T11:00:00",
+      "expiration_date": "2026-08-14T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD013",
+      "blood_type": "B-",
+      "collected_date": "2026-07-01T12:00:00",
+      "expiration_date": "2026-08-14T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD014",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T10:00:00",
+      "expiration_date": "2026-08-15T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG009 - kidney transplant"
+    },
+    {
+      "unit_id": "BLOOD015",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T11:00:00",
+      "expiration_date": "2026-08-15T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD016",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T12:00:00",
+      "expiration_date": "2026-08-15T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD017",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T13:00:00",
+      "expiration_date": "2026-08-15T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD018",
+      "blood_type": "A+",
+      "collected_date": "2026-07-03T10:00:00",
+      "expiration_date": "2026-08-16T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG010 - spinal fusion"
+    },
+    {
+      "unit_id": "BLOOD019",
+      "blood_type": "A+",
+      "collected_date": "2026-07-03T11:00:00",
+      "expiration_date": "2026-08-16T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD020",
+      "blood_type": "AB-",
+      "collected_date": "2026-07-03T12:00:00",
+      "expiration_date": "2026-08-16T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG011 - vascular (only 2 of 5 needed units available - shortage scenario)"
+    },
+    {
+      "unit_id": "BLOOD021",
+      "blood_type": "AB-",
+      "collected_date": "2026-07-03T13:00:00",
+      "expiration_date": "2026-08-16T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD022",
+      "blood_type": "O+",
+      "collected_date": "2026-07-04T10:00:00",
+      "expiration_date": "2026-08-17T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG012 - emergency cesarean"
+    },
+    {
+      "unit_id": "BLOOD023",
+      "blood_type": "O+",
+      "collected_date": "2026-07-04T11:00:00",
+      "expiration_date": "2026-08-17T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD024",
+      "blood_type": "A-",
+      "collected_date": "2026-07-04T12:00:00",
+      "expiration_date": "2026-08-17T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG013 - bariatric"
+    },
+    {
+      "unit_id": "BLOOD025",
+      "blood_type": "A-",
+      "collected_date": "2026-07-04T13:00:00",
+      "expiration_date": "2026-08-17T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
     }
   ],
   "organs": [
@@ -236,6 +507,45 @@
       "donor_blood_type": "A+",
       "donor_age": 45,
       "notes": "Acceptable viability window"
+    },
+    {
+      "organ_id": "ORG003",
+      "organ_type": "KIDNEY",
+      "donor_id": "DONOR003",
+      "procurement_time": "2026-07-06T04:00:00",
+      "viability_window_minutes": 1440,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-07-06T04:00:00",
+      "donor_blood_type": "O+",
+      "donor_age": 32,
+      "notes": "For SURG009 - kidney transplant"
+    },
+    {
+      "organ_id": "ORG004",
+      "organ_type": "PANCREAS",
+      "donor_id": "DONOR004",
+      "procurement_time": "2026-07-06T06:00:00",
+      "viability_window_minutes": 720,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-07-06T06:00:00",
+      "donor_blood_type": "O+",
+      "donor_age": 24,
+      "notes": "For SURG014 - pancreas transplant"
+    },
+    {
+      "organ_id": "ORG005",
+      "organ_type": "HEART",
+      "donor_id": "DONOR005",
+      "procurement_time": "2026-07-06T07:00:00",
+      "viability_window_minutes": 240,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-07-06T07:00:00",
+      "donor_blood_type": "B+",
+      "donor_age": 8,
+      "notes": "For SURG015 - pediatric cardiac, tight viability window near-critical scenario"
     }
   ],
   "equipment": [
@@ -298,6 +608,54 @@
       "next_maintenance_due": "2026-08-15T10:00:00",
       "serial_number": "LIGHT-2023-005",
       "purchase_date": "2023-08-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ006",
+      "name": "NEURO_MICROSCOPE",
+      "equipment_type": "MICROSCOPE",
+      "location": "OR_3",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-01T10:00:00",
+      "next_maintenance_due": "2026-09-01T10:00:00",
+      "serial_number": "NEURO-MICRO-2024-006",
+      "purchase_date": "2024-05-01T00:00:00"
+    },
+    {
+      "equipment_id": "EQ007",
+      "name": "SURGICAL_MICROSCOPE",
+      "equipment_type": "MICROSCOPE",
+      "location": "OR_3",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-01T11:00:00",
+      "next_maintenance_due": "2026-09-01T11:00:00",
+      "serial_number": "SURG-MICRO-2024-007",
+      "purchase_date": "2024-05-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ008",
+      "name": "LAPAROSCOPIC_TOWER",
+      "equipment_type": "LAPAROSCOPIC",
+      "location": "OR_4",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-02T10:00:00",
+      "next_maintenance_due": "2026-09-02T10:00:00",
+      "serial_number": "LAPARO-2024-008",
+      "purchase_date": "2024-06-01T00:00:00"
+    },
+    {
+      "equipment_id": "EQ009",
+      "name": "PEDIATRIC_BYPASS_MACHINE",
+      "equipment_type": "CARDIAC_BYPASS",
+      "location": "OR_4",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-02T11:00:00",
+      "next_maintenance_due": "2026-09-02T11:00:00",
+      "serial_number": "PED-BYPASS-2024-009",
+      "purchase_date": "2024-06-15T00:00:00"
     }
   ],
   "patients": [
@@ -463,6 +821,236 @@
       "medications": [],
       "prior_surgeries": 0,
       "special_notes": "Scenario: crossmatch pending"
+    },
+    {
+      "patient_id": "PAT008",
+      "date_of_birth": "1978-04-12T00:00:00",
+      "blood_type": "B-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. PATEL"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. PATEL"
+        }
+      ],
+      "medications": ["ASPIRIN", "CLOPIDOGREL"],
+      "prior_surgeries": 1,
+      "special_notes": "Scenario: drug interaction - ASPIRIN + CLOPIDOGREL antiplatelet combination"
+    },
+    {
+      "patient_id": "PAT009",
+      "date_of_birth": "1965-08-25T00:00:00",
+      "blood_type": "O+",
+      "allergies": [
+        {
+          "allergen": "SULFA DRUGS",
+          "severity": "HIGH",
+          "reaction": "RASH"
+        }
+      ],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. KIM"
+        },
+        {
+          "consent_type": "ORGAN_TRANSPLANT",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. KIM"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. KIM"
+        }
+      ],
+      "medications": ["TACROLIMUS"],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: kidney transplant - sulfa allergy HIGH severity"
+    },
+    {
+      "patient_id": "PAT010",
+      "date_of_birth": "1980-09-14T00:00:00",
+      "blood_type": "A+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. CHEN"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. CHEN"
+        }
+      ],
+      "medications": ["WARFARIN"],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: anticoagulant risk - patient on WARFARIN"
+    },
+    {
+      "patient_id": "PAT011",
+      "date_of_birth": "1955-02-18T00:00:00",
+      "blood_type": "AB-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. GARCIA"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": false,
+          "date_given": null,
+          "expires": null,
+          "witness": null,
+          "notes": "Transfusion consent NOT given"
+        }
+      ],
+      "medications": ["HEPARIN", "WARFARIN"],
+      "prior_surgeries": 3,
+      "special_notes": "Scenario: blood shortage + missing transfusion consent + critical drug interaction HEPARIN + WARFARIN"
+    },
+    {
+      "patient_id": "PAT012",
+      "date_of_birth": "1998-11-03T00:00:00",
+      "blood_type": "O+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. HASSAN"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. HASSAN"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: emergency cesarean - all resources available"
+    },
+    {
+      "patient_id": "PAT013",
+      "date_of_birth": "1983-06-07T00:00:00",
+      "blood_type": "A-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. NGUYEN"
+        }
+      ],
+      "medications": ["METFORMIN", "LISINOPRIL"],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: bariatric surgery - no transfusion consent"
+    },
+    {
+      "patient_id": "PAT014",
+      "date_of_birth": "1971-12-29T00:00:00",
+      "blood_type": "O+",
+      "allergies": [
+        {
+          "allergen": "LATEX",
+          "severity": "MODERATE",
+          "reaction": "CONTACT_DERMATITIS"
+        }
+      ],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. OSEI"
+        },
+        {
+          "consent_type": "ORGAN_TRANSPLANT",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. OSEI"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. OSEI"
+        }
+      ],
+      "medications": ["INSULIN", "IMMUNOSUPPRESSANTS"],
+      "prior_surgeries": 1,
+      "special_notes": "Scenario: pancreas transplant - latex allergy MODERATE + immunosuppressant medications"
+    },
+    {
+      "patient_id": "PAT015",
+      "date_of_birth": "2018-03-15T00:00:00",
+      "blood_type": "B+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "GUARDIAN_VERIFIED",
+          "notes": "Consent given by guardian"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "GUARDIAN_VERIFIED",
+          "notes": "Consent given by guardian"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: pediatric cardiac - tight organ viability window near-critical"
     }
   ]
 }
