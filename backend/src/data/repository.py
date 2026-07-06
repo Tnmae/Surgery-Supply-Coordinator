@@ -7,25 +7,50 @@ from typing import List, Optional, Dict, Any
 
 
 class DataRepository:
-    """Repository for managing mock data in JSON format."""
-    
+    """Repository for managing mock data in JSON format.
+
+    On read-only filesystems (Vercel, some container runtimes) writes are
+    redirected to /tmp so the process stays alive. Data written there is
+    ephemeral (lost on cold start) but prevents hard crashes.
+    """
+
     def __init__(self, data_file: Path = None):
         """Initialize the repository."""
         if data_file is None:
-            # Get the data file from the same directory as this module
             data_file = Path(__file__).parent / "mock_data.json"
-        
+
         self.data_file = data_file
+        # Writable shadow copy — used when the source file is on a read-only FS
+        self._writable_file: Optional[Path] = None
         self.data = self._load_data()
-    
+
+    def _effective_write_path(self) -> Path:
+        """Return a path we can actually write to."""
+        if self._writable_file:
+            return self._writable_file
+        try:
+            # Test writability with a silent probe
+            self.data_file.write_bytes(self.data_file.read_bytes())
+            return self.data_file
+        except OSError:
+            import shutil
+            tmp_path = Path("/tmp") / f"mock_data_{self.data_file.stem}.json"
+            if not tmp_path.exists():
+                shutil.copy2(self.data_file, tmp_path)
+            self._writable_file = tmp_path
+            return tmp_path
+
     def _load_data(self) -> Dict[str, Any]:
-        """Load mock data from JSON file."""
-        with open(self.data_file, 'r') as f:
+        """Load mock data — prefer the writable shadow copy if it exists."""
+        shadow = Path("/tmp") / f"mock_data_{self.data_file.stem}.json"
+        source = shadow if shadow.exists() else self.data_file
+        with open(source, "r") as f:
             return json.load(f)
-    
+
     def _save_data(self) -> None:
-        """Save data to JSON file."""
-        with open(self.data_file, 'w') as f:
+        """Save data to the effective write path."""
+        write_path = self._effective_write_path()
+        with open(write_path, "w") as f:
             json.dump(self.data, f, indent=2, default=str)
 
     def _find_surgery_index(self, surgery_id: str) -> Optional[int]:
