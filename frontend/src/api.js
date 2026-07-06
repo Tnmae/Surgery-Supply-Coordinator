@@ -26,7 +26,7 @@ export async function fetchSurgery(role, surgeryId) {
   return parse(res);
 }
 
-export async function checkReadiness(role, surgeryId) {
+export async function checkReadiness(role, surgeryId, forceRerun = false) {
   const res = await fetch(`${API_BASE}/check-readiness`, {
     method: 'POST',
     headers: headers(role),
@@ -34,6 +34,7 @@ export async function checkReadiness(role, surgeryId) {
       surgery_id: surgeryId,
       user_role: role,
       requested_at: new Date().toISOString(),
+      force_rerun: forceRerun,
     }),
   });
   return parse(res);
@@ -41,5 +42,20 @@ export async function checkReadiness(role, surgeryId) {
 
 export async function fetchAudit(role, surgeryId, limit = 100) {
   const res = await fetch(`${API_BASE}/audit/${surgeryId}?limit=${limit}`, { headers: headers(role) });
+  return parse(res);
+}
+
+export async function submitBlockerDecision(role, surgeryId, blocker, decision) {
+  const res = await fetch(`${API_BASE}/surgeries/${surgeryId}/blockers/decision`, {
+    method: 'POST',
+    headers: headers(role),
+    body: JSON.stringify({
+      category: blocker.category,
+      message: blocker.message,
+      severity: blocker.severity,
+      suggested_action: blocker.suggested_action,
+      decision,
+    }),
+  });
   return parse(res);
 }

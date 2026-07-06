@@ -7,12 +7,247 @@
       "scheduled_time": "2026-06-29T14:00:00",
       "required_blood_type": "O+",
       "required_blood_units": 4,
-      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "BYPASS_MACHINE"],
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR",
+        "BYPASS_MACHINE"
+      ],
       "estimated_duration_minutes": 180,
       "status": "PENDING",
       "created_at": "2026-06-29T08:00:00",
       "created_by_role": "OR_COORDINATOR",
-      "description": "All clear scenario - all resources available"
+      "description": "All clear scenario - all resources available",
+      "readiness_report": {
+        "success": true,
+        "message": "Readiness check completed - Status: BLOCKED",
+        "readiness_status": "BLOCKED",
+        "surgery_id": "SURG001",
+        "patient_id": "PAT001",
+        "scheduled_time": "2026-06-29T14:00:00",
+        "blockers": [
+          {
+            "category": "CONSENT",
+            "severity": "CRITICAL",
+            "message": "Missing required consent: TRANSFUSION",
+            "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
+          },
+          {
+            "category": "CONSENT",
+            "severity": "CRITICAL",
+            "message": "Missing required consent: ORGAN_TRANSPLANT",
+            "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian"
+          },
+          {
+            "category": "EQUIPMENT",
+            "severity": "CRITICAL",
+            "message": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
+            "suggested_action": "Source or sterilize a replacement for CARDIAC_MONITOR"
+          },
+          {
+            "category": "EQUIPMENT",
+            "severity": "CRITICAL",
+            "message": "Equipment unavailable or not sterile: BYPASS_MACHINE",
+            "suggested_action": "Source or sterilize a replacement for BYPASS_MACHINE"
+          }
+        ],
+        "warnings": [
+          "Patient on anticoagulant (WARFARIN) - careful with anesthesia",
+          "\u26a0\ufe0f  Medication interaction: ASPIRIN - Antiplatelet - may increase bleeding risk",
+          "\u26a0\ufe0f  Medication interaction: METOPROLOL - No specific interaction, but verify anesthesia plan",
+          "3/4 units of O+ available, 1 pending crossmatch",
+          "Scheduled time 2026-06-29T14:00:00 is earlier than the readiness check time",
+          "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
+          "Equipment check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+          "Organ viability risk is MEDIUM; monitor transport/procurement timing closely",
+          "Regional transport required \u2014 adds ~4.0h before the procedure can start"
+        ],
+        "preop_checklist": [
+          {
+            "item": "Patient identity/blood type confirmed",
+            "completed": true
+          },
+          {
+            "item": "Consents verified",
+            "completed": false
+          },
+          {
+            "item": "Blood reserved",
+            "completed": true
+          },
+          {
+            "item": "Equipment ready",
+            "completed": false
+          },
+          {
+            "item": "Organ confirmed",
+            "completed": false
+          }
+        ],
+        "agent_results": {
+          "patient_data": {
+            "extraction_successful": true,
+            "missing_fields": [],
+            "warnings": [
+              "Patient on anticoagulant (WARFARIN) - careful with anesthesia"
+            ]
+          },
+          "safety_consent": {
+            "passed": false,
+            "blockers": [
+              {
+                "category": "CONSENT",
+                "severity": "CRITICAL",
+                "message": "Missing required consent: TRANSFUSION",
+                "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
+              },
+              {
+                "category": "CONSENT",
+                "severity": "CRITICAL",
+                "message": "Missing required consent: ORGAN_TRANSPLANT",
+                "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian"
+              }
+            ],
+            "warnings": [
+              "\u26a0\ufe0f  Medication interaction: ASPIRIN - Antiplatelet - may increase bleeding risk",
+              "\u26a0\ufe0f  Medication interaction: METOPROLOL - No specific interaction, but verify anesthesia plan"
+            ]
+          },
+          "blood": {
+            "available": true,
+            "status": "WARNING",
+            "details": "3/4 units of O+ available, 1 pending crossmatch",
+            "units_pending_crossmatch": 1,
+            "fallback_required": true,
+            "blockers": []
+          },
+          "organ": {
+            "applicable": false,
+            "available": true,
+            "status": "OK",
+            "details": "",
+            "viability_risk_level": "NONE",
+            "needs_transfer": false,
+            "blockers": []
+          },
+          "equipment": {
+            "all_available": false,
+            "status": "BLOCKED",
+            "details": "Missing or unavailable equipment: CARDIAC_MONITOR, BYPASS_MACHINE",
+            "unavailable": [
+              "CARDIAC_MONITOR",
+              "BYPASS_MACHINE"
+            ],
+            "maintenance_concerns": [
+              "BYPASS_MACHINE - maintenance overdue"
+            ],
+            "blockers": [
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
+                "suggested_action": "Source or sterilize a replacement for CARDIAC_MONITOR"
+              },
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: BYPASS_MACHINE",
+                "suggested_action": "Source or sterilize a replacement for BYPASS_MACHINE"
+              }
+            ]
+          },
+          "validation": {
+            "passed": true,
+            "blockers": [],
+            "warnings": [
+              "Scheduled time 2026-06-29T14:00:00 is earlier than the readiness check time",
+              "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
+              "Equipment check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+              "Organ viability risk is MEDIUM; monitor transport/procurement timing closely"
+            ]
+          },
+          "logistics": {
+            "estimated_duration_minutes": 180,
+            "transport_time_hours": 4.0,
+            "total_timeline_minutes": 276,
+            "time_critical": false,
+            "notes": [
+              "Regional blood transfer required"
+            ],
+            "warnings": [
+              "Regional transport required \u2014 adds ~4.0h before the procedure can start"
+            ]
+          }
+        },
+        "human_readable_report": "The surgical readiness check is BLOCKED due to missing consents and unavailable equipment. The patient is on anticoagulant WARFARIN and has medication interactions with ASPIRIN and METOPROLOL. Blood units are available but pending crossmatch. The scheduled time is earlier than the readiness check time, and equipment is unavailable or not sterile. Organ viability risk is MEDIUM. Regional transport is required, adding ~4.0h before the procedure can start. This is decision-support only and requires review and approval by qualified clinical personnel before any action is taken.",
+        "timestamp": "2026-07-06T01:56:51.241719",
+        "review_required": true
+      },
+      "readiness_review_status": "PENDING_REVIEW",
+      "blocker_decisions": [
+        {
+          "category": "VALIDATION",
+          "message": "Organ viability risk combined with procedure timeline creates high risk of a non-viable organ at transplant time",
+          "severity": null,
+          "suggested_action": "Expedite organ transport/procurement or source an alternate organ",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:53:03.490584"
+        },
+        {
+          "category": "BLOOD",
+          "message": "Insufficient blood units: O+",
+          "severity": null,
+          "suggested_action": "Obtain 1 additional unit from fallback",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:53:10.383506"
+        },
+        {
+          "category": "CONSENT",
+          "message": "Missing required consent: TRANSFUSION",
+          "severity": null,
+          "suggested_action": "Obtain TRANSFUSION consent from patient/guardian",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:53:39.964125"
+        },
+        {
+          "category": "CONSENT",
+          "message": "Missing required consent: ORGAN_TRANSPLANT",
+          "severity": "CRITICAL",
+          "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T13:05:00.544391"
+        },
+        {
+          "category": "MEDICATION",
+          "message": "",
+          "severity": "SEVERE",
+          "suggested_action": "",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T13:05:02.324537"
+        },
+        {
+          "category": "CONTRAINDICATION",
+          "message": "Medical contraindication: TREATMENT WITH BETA-BLOCKERS IN PRECIOUS CARDIAC DISEASE",
+          "severity": "CRITICAL",
+          "suggested_action": "Review with attending physician",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T13:05:04.290532"
+        }
+      ],
+      "last_updated": "2026-07-06T01:56:51.242729",
+      "readiness_reviewed_at": "2026-07-05T13:05:04.290532",
+      "reviewed_by_role": "OR_COORDINATOR"
     },
     {
       "surgery_id": "SURG002",
@@ -22,12 +257,231 @@
       "required_blood_type": "A-",
       "required_blood_units": 6,
       "organ_type": "HEART",
-      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR", "BYPASS_MACHINE"],
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR",
+        "BYPASS_MACHINE"
+      ],
       "estimated_duration_minutes": 360,
       "status": "PENDING",
       "created_at": "2026-06-29T08:30:00",
       "created_by_role": "OR_COORDINATOR",
-      "description": "Expired blood scenario - blood available but expired"
+      "description": "Expired blood scenario - blood available but expired",
+      "readiness_report": {
+        "success": true,
+        "message": "Readiness check completed - Status: BLOCKED",
+        "readiness_status": "BLOCKED",
+        "surgery_id": "SURG002",
+        "patient_id": "PAT002",
+        "scheduled_time": "2026-06-29T15:00:00",
+        "blockers": [
+          {
+            "category": "CONSENT",
+            "severity": "LOW",
+            "message": "Missing required consent: ORGAN_TRANSPLANT",
+            "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian"
+          },
+          {
+            "category": "CONSENT",
+            "severity": "LOW",
+            "message": "Expired consent: SURGERY",
+            "suggested_action": "Renew SURGERY consent"
+          },
+          {
+            "category": "BLOOD",
+            "severity": "CRITICAL",
+            "message": "Insufficient blood units: A-",
+            "suggested_action": "Obtain 6 additional units from fallback"
+          }
+        ],
+        "warnings": [
+          "{\u26a0\uefe0  CRITICAL ALLERGY: None - None}",
+          "WARFARIN - Anticoagulant - verify anesthesia plan",
+          "ASPIRIN - Antiplatelet - may increase bleeding risk",
+          "METFORMIN - Diabetes drug - hold before procedure if contrast used",
+          "Scheduled time is earlier than the readiness check time"
+        ],
+        "preop_checklist": [
+          {
+            "item": "Patient identity/blood type confirmed",
+            "completed": false
+          },
+          {
+            "item": "Consents verified",
+            "completed": false
+          },
+          {
+            "item": "Blood reserved",
+            "completed": false
+          },
+          {
+            "item": "Equipment ready",
+            "completed": true
+          },
+          {
+            "item": "Organ confirmed (only if applicable)",
+            "completed": false
+          }
+        ],
+        "agent_results": {
+          "patient_data": {
+            "extraction_successful": true,
+            "missing_fields": [],
+            "warnings": [
+              "Contraindication: Expired blood",
+              "Patient on anticoagulant (WARFARIN) - careful with anesthesia",
+              "CRITICAL ALLERGY: Blood type A- - Scenario"
+            ]
+          },
+          "safety_consent": {
+            "passed": false,
+            "blockers": [
+              {
+                "category": " CONSENT",
+                "severity": "LOW",
+                "message": "Missing required consent: ORGAN_TRANSPLANT",
+                "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian"
+              },
+              {
+                "category": " CONSENT",
+                "severity": "LOW",
+                "message": "Expired consent: SURGERY",
+                "suggested_action": "Renew SURGERY consent"
+              }
+            ],
+            "warnings": [
+              "\u26a0\ufe0f  CRITICAL ALLERGY: None - None",
+              "WARFARIN - Anticoagulant - verify anesthesia plan",
+              "ASPIRIN - Antiplatelet - may increase bleeding risk",
+              "METFORMIN - Diabetes drug - hold before procedure if contrast used"
+            ]
+          },
+          "blood": {
+            "available": false,
+            "status": "BLOCKED",
+            "details": "Insufficient blood units: A- - Obtain 6 additional units from fallback",
+            "units_pending_crossmatch": 0,
+            "fallback_required": true,
+            "blockers": [
+              {
+                "category": "BLOOD",
+                "severity": "CRITICAL",
+                "message": "Insufficient blood units: A-",
+                "suggested_action": "Obtain 6 additional units from fallback"
+              }
+            ]
+          },
+          "organ": {
+            "applicable": true,
+            "available": true,
+            "status": "WARNING",
+            "details": "No regionally available organ match for patient.",
+            "viability_risk_level": "HIGH",
+            "needs_transfer": true,
+            "blockers": [
+              {
+                "category": "ORGAN",
+                "severity": "CRITICAL",
+                "message": "No HEART available for transplant",
+                "suggested_action": "Request organ transfer from regional network or place patient on active wait list"
+              }
+            ]
+          },
+          "equipment": {
+            "all_available": true,
+            "status": "OK",
+            "details": "All equipment is available and ready for use.",
+            "unavailable": [],
+            "maintenance_concerns": [
+              "BYPASS_MACHINE - maintenance overdue"
+            ],
+            "blockers": [
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "BYPASS_MACHINE is unavailable or not sterile: BYPASS_MACHINE does not currently have a replacement.",
+                "suggested_action": "Source or sterilize a replacement for BYPASS_MACHINE"
+              }
+            ]
+          },
+          "validation": {
+            "passed": false,
+            "blockers": [
+              {
+                "category": "VALIDATION",
+                "severity": "CRITICAL",
+                "message": "Organ viability risk combined with procedure timeline creates high risk of a non-viable organ at transplant time",
+                "suggested_action": "Expedite organ transport/procurement or source an alternate organ"
+              },
+              {
+                "category": "BLOOD",
+                "severity": "CRITICAL",
+                "message": "Insufficient blood units: A-",
+                "suggested_action": "Obtain 6 additional units from fallback"
+              }
+            ],
+            "warnings": [
+              "Scheduled time is earlier than the readiness check time",
+              "Organ viability risk combined with procedure timeline creates high risk of a non-viable organ at transplant time",
+              "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
+              "ORGAN check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+              "EQUIPMENT check reported BLOCKED \u2014 readiness cannot proceed until resolved"
+            ]
+          },
+          "logistics": {
+            "estimated_duration_minutes": 360,
+            "transport_time_hours": 4.0,
+            "total_timeline_minutes": 456,
+            "time_critical": true,
+            "notes": [
+              "Blood and organ blocker necessitate regional transport"
+            ],
+            "warnings": [
+              "Regional transport required \u2014 adds ~4h before the procedure can start"
+            ]
+          }
+        },
+        "human_readable_report": "The final status is BLOCKED. The key blockers are:\n\n* \u27b1 CRITICAL ALLERGY: None - None\n* WARFARIN - Anticoagulant - verify anesthesia plan, ASPIRIN - Antiplatelet - may increase bleeding risk, METFORMIN - Diabetes drug - hold before procedure if contrast used\n* Regional transport required \u2014 adds ~4h before the procedure can start.\nNote: This is a decision-support report only and requires review and approval by qualified clinical personnel before any action is taken.",
+        "timestamp": "2026-07-05T12:54:55.826880",
+        "review_required": true,
+        "disclaimer": "This system is for decision-support only. It does not authorize surgery, transfusion, organ allocation, or any medical procedure. All outputs must be reviewed and approved by qualified clinical personnel."
+      },
+      "readiness_review_status": "RESOLVED",
+      "blocker_decisions": [
+        {
+          "category": "CONSENT",
+          "message": "Missing required consent: ORGAN_TRANSPLANT",
+          "severity": "LOW",
+          "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:55:34.489188"
+        },
+        {
+          "category": "CONSENT",
+          "message": "Expired consent: SURGERY",
+          "severity": "LOW",
+          "suggested_action": "Renew SURGERY consent",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:55:35.350991"
+        },
+        {
+          "category": "BLOOD",
+          "message": "Insufficient blood units: A-",
+          "severity": "CRITICAL",
+          "suggested_action": "Obtain 6 additional units from fallback",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:55:36.263440"
+        }
+      ],
+      "last_updated": "2026-07-05T12:55:36.263440",
+      "readiness_reviewed_at": "2026-07-05T12:55:36.263440",
+      "reviewed_by_role": "OR_COORDINATOR"
     },
     {
       "surgery_id": "SURG003",
@@ -36,12 +490,201 @@
       "scheduled_time": "2026-06-29T13:00:00",
       "required_blood_type": "B+",
       "required_blood_units": 8,
-      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE", "OVERHEAD_LIGHTS"],
+      "equipment_list": [
+        "VENTILATOR",
+        "ANESTHESIA_MACHINE",
+        "OVERHEAD_LIGHTS"
+      ],
       "estimated_duration_minutes": 120,
       "status": "PENDING",
       "created_at": "2026-06-29T09:00:00",
       "created_by_role": "OR_COORDINATOR",
-      "description": "Wrong blood type scenario - only wrong type available"
+      "description": "Wrong blood type scenario - only wrong type available",
+      "readiness_report": {
+        "success": true,
+        "message": "Readiness check completed - Status: BLOCKED",
+        "readiness_status": "BLOCKED",
+        "surgery_id": "SURG003",
+        "patient_id": "PAT003",
+        "scheduled_time": "2026-06-29T13:00:00",
+        "blockers": [
+          {
+            "category": "CONSENT",
+            "severity": "LOW",
+            "message": "Missing required consent: TRANSFUSION",
+            "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
+          },
+          {
+            "category": "EQUIPMENT",
+            "severity": "CRITICAL",
+            "message": "Equipment unavailable or not sterile: OVERHEAD_LIGHTS",
+            "suggested_action": "Source or sterilize a replacement for OVERHEAD_LIGHTS"
+          }
+        ],
+        "warnings": [
+          "Contraindication: None",
+          "Patient on anticoagulant (WARFARIN) - careful with anesthesia"
+        ],
+        "preop_checklist": [
+          {
+            "item": "patient_identity/blood_type confirmed",
+            "completed": false
+          },
+          {
+            "item": "consents verified",
+            "completed": false
+          },
+          {
+            "item": "blood reserved",
+            "completed": false
+          },
+          {
+            "item": "equipment ready",
+            "completed": false
+          },
+          {
+            "item": "organ confirmed",
+            "completed": true
+          },
+          {
+            "item": "cross-resource validation passed",
+            "completed": false
+          }
+        ],
+        "agent_results": {
+          "patient_data": {
+            "extraction_successful": true,
+            "missing_fields": [],
+            "warnings": [
+              "CRITICAL ALLERGY: None - None",
+              "Contraindication: None",
+              "Patient on anticoagulant (WARFARIN) - careful with anesthesia"
+            ]
+          },
+          "safety_consent": {
+            "passed": true,
+            "blockers": [
+              {
+                "category": "CONSENT",
+                "severity": "LOW",
+                "message": "Missing required consent: TRANSFUSION",
+                "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
+              }
+            ],
+            "warnings": []
+          },
+          "blood": {
+            "available": true,
+            "status": "BLOCKED",
+            "details": "Insufficient blood units: B+ required.<br>6 more units needed from fallback.",
+            "units_pending_crossmatch": 0,
+            "fallback_required": true,
+            "blockers": [
+              {
+                "category": "BLOOD",
+                "message": "Insufficient blood units: B+",
+                "suggested_action": "Obtain 6 additional units from fallback"
+              },
+              {
+                "category": "stock",
+                "severity": "LOW",
+                "message": "Out of stock",
+                "suggested_action": ""
+              }
+            ]
+          },
+          "organ": {
+            "applicable": false,
+            "available": true,
+            "status": "OK",
+            "details": "This surgery does not require an organ transplant.",
+            "viability_risk_level": "NONE",
+            "needs_transfer": false,
+            "blockers": []
+          },
+          "equipment": {
+            "all_available": true,
+            "status": "OK",
+            "details": "All equipment is currently available.",
+            "unavailable": [],
+            "maintenance_concerns": [
+              "OVERHEAD_LIGHTS - maintenance overdue"
+            ],
+            "blockers": [
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: OVERHEAD_LIGHTS",
+                "suggested_action": "Source or sterilize a replacement for OVERHEAD_LIGHTS"
+              }
+            ]
+          },
+          "validation": {
+            "passed": false,
+            "blockers": [
+              {
+                "category": "VALIDATION",
+                "severity": "CRITICAL",
+                "message": "Organ viability risk combined with procedure timeline creates high risk of a non-viable organ at transplant time",
+                "suggested_action": "Expedite organ transport/procurement or source an alternate organ"
+              },
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: OVERHEAD_LIGHTS",
+                "suggested_action": "Source or sterilize a replacement for OVERHEAD_LIGHTS"
+              }
+            ],
+            "warnings": [
+              "Scheduled time 2026-06-29T13:00:00 is earlier than the readiness check time",
+              "Out of stock: Insufficient blood units: B+",
+              "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival"
+            ]
+          },
+          "logistics": {
+            "estimated_duration_minutes": 120,
+            "transport_time_hours": 4.0,
+            "total_timeline_minutes": 84,
+            "time_critical": true,
+            "notes": [
+              "Blood supply is low, requiring fallback transfer for B+ units."
+            ],
+            "warnings": [
+              "Regional transport required \u2014 adds ~4h before the procedure can start"
+            ]
+          }
+        },
+        "human_readable_report": "The procedure is currently blocked due to missing consent for the TRANSFUSION, and equipment being unavailable or not sterile. Blood units are insufficient for the procedure, with only 6 additional units available as a fallback. Despite some logistical warnings regarding regional transport and organ viability risk, all necessary prerequisites have not been met. This pipeline requires review and approval from qualified clinical personnel before any action is taken.",
+        "timestamp": "2026-07-05T13:16:54.783985",
+        "review_required": true,
+        "disclaimer": "This system is for decision-support only. It does not authorize surgery, transfusion, organ allocation, or any medical procedure. All outputs must be reviewed and approved by qualified clinical personnel."
+      },
+      "readiness_review_status": "RESOLVED",
+      "blocker_decisions": [
+        {
+          "category": "CONSENT",
+          "message": "Missing required consent: TRANSFUSION",
+          "severity": "LOW",
+          "suggested_action": "Obtain TRANSFUSION consent from patient/guardian",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T13:17:18.672507"
+        },
+        {
+          "category": "EQUIPMENT",
+          "message": "Equipment unavailable or not sterile: OVERHEAD_LIGHTS",
+          "severity": "CRITICAL",
+          "suggested_action": "Source or sterilize a replacement for OVERHEAD_LIGHTS",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T13:17:19.878924"
+        }
+      ],
+      "last_updated": "2026-07-05T13:17:19.878924",
+      "readiness_reviewed_at": "2026-07-05T13:17:19.878924",
+      "reviewed_by_role": "OR_COORDINATOR"
     },
     {
       "surgery_id": "SURG004",
@@ -51,12 +694,243 @@
       "required_blood_type": "AB+",
       "required_blood_units": 4,
       "organ_type": "LIVER",
-      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR"],
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR"
+      ],
       "estimated_duration_minutes": 300,
       "status": "PENDING",
       "created_at": "2026-06-29T09:15:00",
       "created_by_role": "OR_COORDINATOR",
-      "description": "Organ viability risk scenario"
+      "description": "Organ viability risk scenario",
+      "readiness_report": {
+        "success": true,
+        "message": "Readiness check completed - Status: BLOCKED",
+        "readiness_status": "BLOCKED",
+        "surgery_id": "SURG004",
+        "patient_id": "PAT004",
+        "scheduled_time": "2026-06-29T16:00:00",
+        "blockers": [
+          {
+            "category": "CONSENT",
+            "message": "Missing required consent: TRANSFUSION",
+            "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
+          },
+          {
+            "category": "CONSENT",
+            "message": "Expired consent: ORGAN_TRANSPLANT",
+            "suggested_action": "Renew ORGAN_TRANSPLANT consent"
+          },
+          {
+            "category": "BLOOD",
+            "severity": "CRITICAL",
+            "message": "Insufficient blood units: AB+",
+            "suggested_action": "Obtain <units_needed - units_available> additional units from fallback"
+          },
+          {
+            "category": "ORGAN",
+            "severity": "CRITICAL",
+            "message": "No LIVER available for transplant",
+            "suggested_action": "Request organ transfer from regional network or place patient on active wait list"
+          }
+        ],
+        "warnings": [
+          "\u26a0\ufe0f  CRITICAL ALLERGY: PENICILLIN - ANAPHYLAXIS",
+          "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
+          "Regional transport required \u2014 adds ~4.0h before the procedure can start",
+          "Regional transport required \u2014 adds ~6.0h due to organ transport needs"
+        ],
+        "preop_checklist": [
+          {
+            "item": "patient identity/blood type confirmed",
+            "completed": false
+          },
+          {
+            "item": "consents verified",
+            "completed": false
+          },
+          {
+            "item": "blood reserved",
+            "completed": false
+          },
+          {
+            "item": "equipment ready",
+            "completed": true
+          },
+          {
+            "item": "organ confirmed (only if applicable)",
+            "completed": false
+          }
+        ],
+        "agent_results": {
+          "patient_data": {
+            "extraction_successful": true,
+            "missing_fields": [],
+            "warnings": [
+              "CRITICAL ALLERGY: PENICILLIN - ANAPHYLAXIS",
+              "Contraindication: []"
+            ]
+          },
+          "safety_consent": {
+            "passed": false,
+            "blockers": [
+              {
+                "category": "CONSENT",
+                "message": "Missing required consent: TRANSFUSION",
+                "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
+              },
+              {
+                "category": "CONSENT",
+                "message": "Expired consent: ORGAN_TRANSPLANT",
+                "suggested_action": "Renew ORGAN_TRANSPLANT consent"
+              }
+            ],
+            "warnings": [
+              "\u26a0\ufe0f  CRITICAL ALLERGY: PENICILLIN - ANAPHYLAXIS"
+            ]
+          },
+          "blood": {
+            "available": true,
+            "status": "BLOCKED",
+            "details": "Insufficient blood units: <blood_type> units are needed, but can only get 2. Fallback unavailable.",
+            "units_pending_crossmatch": 0,
+            "fallback_required": true,
+            "blockers": [
+              {
+                "category": "BLOOD",
+                "severity": "CRITICAL",
+                "message": "Insufficient blood units: AB+",
+                "suggested_action": "Obtain <units_needed - units_available> additional units from fallback"
+              }
+            ]
+          },
+          "organ": {
+            "applicable": true,
+            "available": true,
+            "status": "WARNING",
+            "details": "No liver match available - requesting regional transfer",
+            "viability_risk_level": "HIGH",
+            "needs_transfer": true,
+            "blockers": [
+              {
+                "category": "ORGAN",
+                "severity": "CRITICAL",
+                "message": "No LIVER available for transplant",
+                "suggested_action": "Request organ transfer from regional network or place patient on active wait list"
+              }
+            ]
+          },
+          "equipment": {
+            "all_available": true,
+            "status": "OK",
+            "details": "All equipment available and in good status.",
+            "unavailable": [],
+            "maintenance_concerns": [
+              "VENTILATOR - maintenance overdue"
+            ],
+            "blockers": [
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
+                "suggested_action": "Source or sterilize a replacement for CARDIAC_MONITOR"
+              }
+            ]
+          },
+          "validation": {
+            "passed": true,
+            "blockers": [
+              {
+                "category": "VALIDATION",
+                "severity": "CRITICAL",
+                "message": "Scheduled time <scheduled_time> is earlier than the readiness check time",
+                "suggested_action": "-"
+              },
+              {
+                "category": "VALIDATION",
+                "severity": "CRITICAL",
+                "message": "Organ viability risk combined with procedure timeline creates high risk of a non-viable organ at transplant time",
+                "suggested_action": "Expedite organ transport/procurement or source an alternate organ"
+              },
+              {
+                "category": "VALIDATION",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
+                "suggested_action": "Source or sterilize a replacement for CARDIAC_MONITOR"
+              }
+            ],
+            "warnings": [
+              "Insufficient blood units: AB+",
+              "No LIVER available for transplant",
+              "VENTILATOR - maintenance overdue",
+              "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival"
+            ]
+          },
+          "logistics": {
+            "estimated_duration_minutes": 300,
+            "transport_time_hours": 4.0,
+            "total_timeline_minutes": 384,
+            "time_critical": true,
+            "notes": [
+              "Blood and organ blockers detected"
+            ],
+            "warnings": [
+              "Regional transport required \u2014 adds ~4.0h before the procedure can start",
+              "Regional transport required \u2014 adds ~6.0h due to organ transport needs"
+            ]
+          }
+        },
+        "human_readable_report": "The procedure is currently blocked due to missing consent, expired consent, insufficient blood units, and a lack of available LIVER for transplant. Regional transport is required adding ~4.0h before the procedure can start. Blood units pending crossmatch must be confirmed before organ arrival. This decision-support system requires review and approval by qualified clinical personnel before any action is taken.",
+        "timestamp": "2026-07-05T12:57:06.566532",
+        "review_required": true,
+        "disclaimer": "This system is for decision-support only. It does not authorize surgery, transfusion, organ allocation, or any medical procedure. All outputs must be reviewed and approved by qualified clinical personnel."
+      },
+      "readiness_review_status": "RESOLVED",
+      "blocker_decisions": [
+        {
+          "category": "CONSENT",
+          "message": "Missing required consent: TRANSFUSION",
+          "severity": null,
+          "suggested_action": "Obtain TRANSFUSION consent from patient/guardian",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:57:10.891007"
+        },
+        {
+          "category": "CONSENT",
+          "message": "Expired consent: ORGAN_TRANSPLANT",
+          "severity": null,
+          "suggested_action": "Renew ORGAN_TRANSPLANT consent",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:57:11.979762"
+        },
+        {
+          "category": "BLOOD",
+          "message": "Insufficient blood units: AB+",
+          "severity": "CRITICAL",
+          "suggested_action": "Obtain <units_needed - units_available> additional units from fallback",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:57:13.188048"
+        },
+        {
+          "category": "ORGAN",
+          "message": "No LIVER available for transplant",
+          "severity": "CRITICAL",
+          "suggested_action": "Request organ transfer from regional network or place patient on active wait list",
+          "decision": "ACCEPT",
+          "notes": null,
+          "acted_by_role": "OR_COORDINATOR",
+          "acted_at": "2026-07-05T12:57:15.622619"
+        }
+      ],
+      "last_updated": "2026-07-05T12:57:15.622619",
+      "readiness_reviewed_at": "2026-07-05T12:57:15.622619",
+      "reviewed_by_role": "OR_COORDINATOR"
     },
     {
       "surgery_id": "SURG005",
@@ -65,7 +939,10 @@
       "scheduled_time": "2026-06-29T17:00:00",
       "required_blood_type": "O-",
       "required_blood_units": 2,
-      "equipment_list": ["VENTILATOR", "MISSING_EQUIPMENT"],
+      "equipment_list": [
+        "VENTILATOR",
+        "MISSING_EQUIPMENT"
+      ],
       "estimated_duration_minutes": 90,
       "status": "PENDING",
       "created_at": "2026-06-29T09:30:00",
@@ -79,7 +956,10 @@
       "scheduled_time": "2026-06-29T18:00:00",
       "required_blood_type": "A+",
       "required_blood_units": 3,
-      "equipment_list": ["VENTILATOR", "CARDIAC_MONITOR"],
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR"
+      ],
       "estimated_duration_minutes": 150,
       "status": "PENDING",
       "created_at": "2026-06-29T09:45:00",
@@ -93,12 +973,330 @@
       "scheduled_time": "2026-06-29T12:00:00",
       "required_blood_type": "O+",
       "required_blood_units": 6,
-      "equipment_list": ["VENTILATOR", "ANESTHESIA_MACHINE"],
+      "equipment_list": [
+        "VENTILATOR",
+        "ANESTHESIA_MACHINE"
+      ],
       "estimated_duration_minutes": 120,
       "status": "PENDING",
       "created_at": "2026-06-29T10:00:00",
       "created_by_role": "OR_COORDINATOR",
-      "description": "Crossmatch pending scenario"
+      "description": "Crossmatch pending scenario",
+      "readiness_report": {
+        "success": true,
+        "message": "Readiness check completed - Status: BLOCKED",
+        "readiness_status": "BLOCKED",
+        "surgery_id": "SURG007",
+        "patient_id": "PAT007",
+        "scheduled_time": "2026-06-29T12:00:00",
+        "blockers": [
+          {
+            "category": "PATIENT",
+            "severity": "CRITICAL",
+            "message": "Patient identity/blood type not confirmed",
+            "suggested_action": "Verify patient identity and blood type"
+          },
+          {
+            "category": "SAFETY",
+            "severity": "CRITICAL",
+            "message": "Safety check failed",
+            "suggested_action": "Rerun safety check"
+          },
+          {
+            "category": "BLOOD",
+            "severity": "CRITICAL",
+            "message": "Blood not available",
+            "suggested_action": "Source or reserve blood"
+          },
+          {
+            "category": "ORGAN",
+            "severity": "CRITICAL",
+            "message": "Organ not available",
+            "suggested_action": "Source or reserve organ"
+          },
+          {
+            "category": "EQUIPMENT",
+            "severity": "CRITICAL",
+            "message": "Equipment unavailable or not sterile: VENTILATOR",
+            "suggested_action": "Source or sterilize a replacement for VENTILATOR"
+          },
+          {
+            "category": "EQUIPMENT",
+            "severity": "CRITICAL",
+            "message": "Equipment unavailable or not sterile: ANESTHESIA_MACHINE",
+            "suggested_action": "Source or sterilize a replacement for ANESTHESIA_MACHINE"
+          },
+          {
+            "category": "VALIDATION",
+            "severity": "CRITICAL",
+            "message": "Validation check failed",
+            "suggested_action": "Rerun validation check"
+          }
+        ],
+        "warnings": [
+          "Scheduled time 2026-06-29T12:00:00 is earlier than the readiness check time",
+          "BLOOD check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+          "ORGAN check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+          "EQUIPMENT check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+          "Organ viability risk is MEDIUM; monitor transport/procurement timing closely",
+          "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
+          "Regional transport required \u2014 adds ~4.0h before the procedure can start"
+        ],
+        "preop_checklist": [
+          {
+            "item": "Patient identity/blood type confirmed",
+            "completed": false
+          },
+          {
+            "item": "Consents verified",
+            "completed": false
+          },
+          {
+            "item": "Blood reserved",
+            "completed": false
+          },
+          {
+            "item": "Equipment ready",
+            "completed": false
+          },
+          {
+            "item": "Organ confirmed",
+            "completed": false
+          },
+          {
+            "item": "Cross-resource validation passed",
+            "completed": false
+          }
+        ],
+        "agent_results": {
+          "patient_data": {
+            "extraction_successful": true,
+            "missing_fields": [],
+            "warnings": []
+          },
+          "safety_consent": {
+            "passed": true,
+            "blockers": [],
+            "warnings": []
+          },
+          "blood": {
+            "available": true,
+            "status": "WARNING",
+            "details": "3/6 units of O+ available, 1 pending crossmatch",
+            "units_pending_crossmatch": 1,
+            "fallback_required": true,
+            "blockers": []
+          },
+          "organ": {
+            "applicable": false,
+            "available": true,
+            "status": "OK",
+            "details": "",
+            "viability_risk_level": "NONE",
+            "needs_transfer": false,
+            "blockers": []
+          },
+          "equipment": {
+            "all_available": false,
+            "status": "BLOCKED",
+            "details": "Missing or unavailable equipment: VENTILATOR, ANESTHESIA_MACHINE",
+            "unavailable": [
+              "VENTILATOR",
+              "ANESTHESIA_MACHINE"
+            ],
+            "maintenance_concerns": [],
+            "blockers": [
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: VENTILATOR",
+                "suggested_action": "Source or sterilize a replacement for VENTILATOR"
+              },
+              {
+                "category": "EQUIPMENT",
+                "severity": "CRITICAL",
+                "message": "Equipment unavailable or not sterile: ANESTHESIA_MACHINE",
+                "suggested_action": "Source or sterilize a replacement for ANESTHESIA_MACHINE"
+              }
+            ]
+          },
+          "validation": {
+            "passed": true,
+            "blockers": [],
+            "warnings": [
+              "Scheduled time 2026-06-29T12:00:00 is earlier than the readiness check time",
+              "BLOOD check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+              "ORGAN check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+              "EQUIPMENT check reported BLOCKED \u2014 readiness cannot proceed until resolved",
+              "Organ viability risk is MEDIUM; monitor transport/procurement timing closely",
+              "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival"
+            ]
+          },
+          "logistics": {
+            "estimated_duration_minutes": 120,
+            "transport_time_hours": 4.0,
+            "total_timeline_minutes": 300,
+            "time_critical": false,
+            "notes": [
+              "Regional blood transfer required due to fallback required"
+            ],
+            "warnings": [
+              "Regional transport required \u2014 adds ~4.0h before the procedure can start"
+            ]
+          }
+        },
+        "human_readable_report": "The final status is BLOCKED. Key blockers include patient identity/blood type not confirmed, safety check failed, blood not available, organ not available, equipment unavailable or not sterile: VENTILATOR, equipment unavailable or not sterile: ANESTHESIA_MACHINE, validation check failed. There are also several time-critical logistics constraints, including regional transport required, which adds ~4.0h before the procedure can start. This is decision-support only and requires review and approval by qualified clinical personnel before any action is taken.",
+        "timestamp": "2026-07-06T02:06:03.674633",
+        "review_required": true
+      },
+      "readiness_review_status": "PENDING_REVIEW",
+      "blocker_decisions": [],
+      "last_updated": "2026-07-06T02:06:03.675631"
+    },
+    {
+      "surgery_id": "SURG008",
+      "patient_id": "PAT008",
+      "surgery_type": "NEUROSURGERY",
+      "scheduled_time": "2026-07-20T08:00:00",
+      "required_blood_type": "B-",
+      "required_blood_units": 3,
+      "equipment_list": [
+        "VENTILATOR",
+        "ANESTHESIA_MACHINE",
+        "NEURO_MICROSCOPE"
+      ],
+      "estimated_duration_minutes": 240,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Drug interaction scenario - ASPIRIN + CLOPIDOGREL antiplatelet combination"
+    },
+    {
+      "surgery_id": "SURG009",
+      "patient_id": "PAT009",
+      "surgery_type": "KIDNEY_TRANSPLANT",
+      "scheduled_time": "2026-07-21T09:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 4,
+      "organ_type": "KIDNEY",
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR"
+      ],
+      "estimated_duration_minutes": 210,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Kidney transplant - sulfa allergy noted"
+    },
+    {
+      "surgery_id": "SURG010",
+      "patient_id": "PAT010",
+      "surgery_type": "SPINAL_FUSION",
+      "scheduled_time": "2026-07-22T07:30:00",
+      "required_blood_type": "A+",
+      "required_blood_units": 2,
+      "equipment_list": [
+        "VENTILATOR",
+        "ANESTHESIA_MACHINE",
+        "SURGICAL_MICROSCOPE"
+      ],
+      "estimated_duration_minutes": 300,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Anticoagulant risk scenario - patient on WARFARIN"
+    },
+    {
+      "surgery_id": "SURG011",
+      "patient_id": "PAT011",
+      "surgery_type": "VASCULAR",
+      "scheduled_time": "2026-07-22T14:00:00",
+      "required_blood_type": "AB-",
+      "required_blood_units": 5,
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR",
+        "ANESTHESIA_MACHINE"
+      ],
+      "estimated_duration_minutes": 180,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Blood shortage scenario + critical drug interaction HEPARIN + WARFARIN + missing transfusion consent"
+    },
+    {
+      "surgery_id": "SURG012",
+      "patient_id": "PAT012",
+      "surgery_type": "EMERGENCY_CESAREAN",
+      "scheduled_time": "2026-07-23T06:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 2,
+      "equipment_list": [
+        "VENTILATOR",
+        "ANESTHESIA_MACHINE",
+        "OVERHEAD_LIGHTS"
+      ],
+      "estimated_duration_minutes": 60,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Emergency cesarean - all resources available"
+    },
+    {
+      "surgery_id": "SURG013",
+      "patient_id": "PAT013",
+      "surgery_type": "BARIATRIC",
+      "scheduled_time": "2026-07-24T10:00:00",
+      "required_blood_type": "A-",
+      "required_blood_units": 2,
+      "equipment_list": [
+        "VENTILATOR",
+        "ANESTHESIA_MACHINE"
+      ],
+      "estimated_duration_minutes": 120,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Bariatric surgery - no transfusion consent scenario"
+    },
+    {
+      "surgery_id": "SURG014",
+      "patient_id": "PAT014",
+      "surgery_type": "ORGAN_TRANSPLANT",
+      "scheduled_time": "2026-07-25T08:00:00",
+      "required_blood_type": "O+",
+      "required_blood_units": 4,
+      "organ_type": "PANCREAS",
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR",
+        "BYPASS_MACHINE"
+      ],
+      "estimated_duration_minutes": 360,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Pancreas transplant - latex allergy + immunosuppressant medications"
+    },
+    {
+      "surgery_id": "SURG015",
+      "patient_id": "PAT015",
+      "surgery_type": "PEDIATRIC_CARDIAC",
+      "scheduled_time": "2026-07-27T07:00:00",
+      "required_blood_type": "B+",
+      "required_blood_units": 2,
+      "organ_type": "HEART",
+      "equipment_list": [
+        "VENTILATOR",
+        "CARDIAC_MONITOR",
+        "BYPASS_MACHINE"
+      ],
+      "estimated_duration_minutes": 240,
+      "status": "PENDING",
+      "created_at": "2026-07-06T10:00:00",
+      "created_by_role": "OR_COORDINATOR",
+      "description": "Pediatric cardiac - tight organ viability window near-critical scenario"
     }
   ],
   "blood_units": [
@@ -206,6 +1404,162 @@
       "crossmatch_status": "COMPATIBLE",
       "unit_volume_ml": 450,
       "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD011",
+      "blood_type": "B-",
+      "collected_date": "2026-07-01T10:00:00",
+      "expiration_date": "2026-08-14T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG008 - neurosurgery"
+    },
+    {
+      "unit_id": "BLOOD012",
+      "blood_type": "B-",
+      "collected_date": "2026-07-01T11:00:00",
+      "expiration_date": "2026-08-14T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD013",
+      "blood_type": "B-",
+      "collected_date": "2026-07-01T12:00:00",
+      "expiration_date": "2026-08-14T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD014",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T10:00:00",
+      "expiration_date": "2026-08-15T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG009 - kidney transplant"
+    },
+    {
+      "unit_id": "BLOOD015",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T11:00:00",
+      "expiration_date": "2026-08-15T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD016",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T12:00:00",
+      "expiration_date": "2026-08-15T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD017",
+      "blood_type": "O+",
+      "collected_date": "2026-07-02T13:00:00",
+      "expiration_date": "2026-08-15T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD018",
+      "blood_type": "A+",
+      "collected_date": "2026-07-03T10:00:00",
+      "expiration_date": "2026-08-16T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG010 - spinal fusion"
+    },
+    {
+      "unit_id": "BLOOD019",
+      "blood_type": "A+",
+      "collected_date": "2026-07-03T11:00:00",
+      "expiration_date": "2026-08-16T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD020",
+      "blood_type": "AB-",
+      "collected_date": "2026-07-03T12:00:00",
+      "expiration_date": "2026-08-16T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG011 - vascular (only 2 of 5 needed units available - shortage scenario)"
+    },
+    {
+      "unit_id": "BLOOD021",
+      "blood_type": "AB-",
+      "collected_date": "2026-07-03T13:00:00",
+      "expiration_date": "2026-08-16T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD022",
+      "blood_type": "O+",
+      "collected_date": "2026-07-04T10:00:00",
+      "expiration_date": "2026-08-17T10:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG012 - emergency cesarean"
+    },
+    {
+      "unit_id": "BLOOD023",
+      "blood_type": "O+",
+      "collected_date": "2026-07-04T11:00:00",
+      "expiration_date": "2026-08-17T11:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
+    },
+    {
+      "unit_id": "BLOOD024",
+      "blood_type": "A-",
+      "collected_date": "2026-07-04T12:00:00",
+      "expiration_date": "2026-08-17T12:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank",
+      "notes": "For SURG013 - bariatric"
+    },
+    {
+      "unit_id": "BLOOD025",
+      "blood_type": "A-",
+      "collected_date": "2026-07-04T13:00:00",
+      "expiration_date": "2026-08-17T13:00:00",
+      "status": "AVAILABLE",
+      "crossmatch_status": "NOT_PERFORMED",
+      "unit_volume_ml": 450,
+      "location": "Blood Bank"
     }
   ],
   "organs": [
@@ -236,6 +1590,45 @@
       "donor_blood_type": "A+",
       "donor_age": 45,
       "notes": "Acceptable viability window"
+    },
+    {
+      "organ_id": "ORG003",
+      "organ_type": "KIDNEY",
+      "donor_id": "DONOR003",
+      "procurement_time": "2026-07-06T04:00:00",
+      "viability_window_minutes": 1440,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-07-06T04:00:00",
+      "donor_blood_type": "O+",
+      "donor_age": 32,
+      "notes": "For SURG009 - kidney transplant"
+    },
+    {
+      "organ_id": "ORG004",
+      "organ_type": "PANCREAS",
+      "donor_id": "DONOR004",
+      "procurement_time": "2026-07-06T06:00:00",
+      "viability_window_minutes": 720,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-07-06T06:00:00",
+      "donor_blood_type": "O+",
+      "donor_age": 24,
+      "notes": "For SURG014 - pancreas transplant"
+    },
+    {
+      "organ_id": "ORG005",
+      "organ_type": "HEART",
+      "donor_id": "DONOR005",
+      "procurement_time": "2026-07-06T07:00:00",
+      "viability_window_minutes": 240,
+      "status": "AVAILABLE",
+      "current_location": "Regional Organ Procurement Center",
+      "cold_storage_started": "2026-07-06T07:00:00",
+      "donor_blood_type": "B+",
+      "donor_age": 8,
+      "notes": "For SURG015 - pediatric cardiac, tight viability window near-critical scenario"
     }
   ],
   "equipment": [
@@ -298,6 +1691,54 @@
       "next_maintenance_due": "2026-08-15T10:00:00",
       "serial_number": "LIGHT-2023-005",
       "purchase_date": "2023-08-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ006",
+      "name": "NEURO_MICROSCOPE",
+      "equipment_type": "MICROSCOPE",
+      "location": "OR_3",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-01T10:00:00",
+      "next_maintenance_due": "2026-09-01T10:00:00",
+      "serial_number": "NEURO-MICRO-2024-006",
+      "purchase_date": "2024-05-01T00:00:00"
+    },
+    {
+      "equipment_id": "EQ007",
+      "name": "SURGICAL_MICROSCOPE",
+      "equipment_type": "MICROSCOPE",
+      "location": "OR_3",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-01T11:00:00",
+      "next_maintenance_due": "2026-09-01T11:00:00",
+      "serial_number": "SURG-MICRO-2024-007",
+      "purchase_date": "2024-05-15T00:00:00"
+    },
+    {
+      "equipment_id": "EQ008",
+      "name": "LAPAROSCOPIC_TOWER",
+      "equipment_type": "LAPAROSCOPIC",
+      "location": "OR_4",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-02T10:00:00",
+      "next_maintenance_due": "2026-09-02T10:00:00",
+      "serial_number": "LAPARO-2024-008",
+      "purchase_date": "2024-06-01T00:00:00"
+    },
+    {
+      "equipment_id": "EQ009",
+      "name": "PEDIATRIC_BYPASS_MACHINE",
+      "equipment_type": "CARDIAC_BYPASS",
+      "location": "OR_4",
+      "status": "AVAILABLE",
+      "sterilization_status": "STERILE",
+      "last_maintenance_date": "2026-07-02T11:00:00",
+      "next_maintenance_due": "2026-09-02T11:00:00",
+      "serial_number": "PED-BYPASS-2024-009",
+      "purchase_date": "2024-06-15T00:00:00"
     }
   ],
   "patients": [
@@ -317,7 +1758,10 @@
           "notes": "Signed and witnessed"
         }
       ],
-      "medications": ["ASPIRIN", "METOPROLOL"],
+      "medications": [
+        "ASPIRIN",
+        "METOPROLOL"
+      ],
       "prior_surgeries": 2,
       "special_notes": "Scenario: all clear"
     },
@@ -344,7 +1788,9 @@
           "witness": "DR. JONES"
         }
       ],
-      "medications": ["WARFARIN"],
+      "medications": [
+        "WARFARIN"
+      ],
       "prior_surgeries": 1,
       "special_notes": "Scenario: expired blood"
     },
@@ -395,7 +1841,9 @@
           "witness": "DR. WILLIAMS"
         }
       ],
-      "medications": ["IMMUNOSUPPRESSANTS"],
+      "medications": [
+        "IMMUNOSUPPRESSANTS"
+      ],
       "prior_surgeries": 0,
       "special_notes": "Scenario: organ viability risk"
     },
@@ -434,7 +1882,9 @@
           "notes": "Transfusion consent NOT given"
         }
       ],
-      "medications": ["LISINOPRIL"],
+      "medications": [
+        "LISINOPRIL"
+      ],
       "prior_surgeries": 1,
       "special_notes": "Scenario: missing consent"
     },
@@ -463,6 +1913,252 @@
       "medications": [],
       "prior_surgeries": 0,
       "special_notes": "Scenario: crossmatch pending"
+    },
+    {
+      "patient_id": "PAT008",
+      "date_of_birth": "1978-04-12T00:00:00",
+      "blood_type": "B-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. PATEL"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. PATEL"
+        }
+      ],
+      "medications": [
+        "ASPIRIN",
+        "CLOPIDOGREL"
+      ],
+      "prior_surgeries": 1,
+      "special_notes": "Scenario: drug interaction - ASPIRIN + CLOPIDOGREL antiplatelet combination"
+    },
+    {
+      "patient_id": "PAT009",
+      "date_of_birth": "1965-08-25T00:00:00",
+      "blood_type": "O+",
+      "allergies": [
+        {
+          "allergen": "SULFA DRUGS",
+          "severity": "HIGH",
+          "reaction": "RASH"
+        }
+      ],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. KIM"
+        },
+        {
+          "consent_type": "ORGAN_TRANSPLANT",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. KIM"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. KIM"
+        }
+      ],
+      "medications": [
+        "TACROLIMUS"
+      ],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: kidney transplant - sulfa allergy HIGH severity"
+    },
+    {
+      "patient_id": "PAT010",
+      "date_of_birth": "1980-09-14T00:00:00",
+      "blood_type": "A+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. CHEN"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. CHEN"
+        }
+      ],
+      "medications": [
+        "WARFARIN"
+      ],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: anticoagulant risk - patient on WARFARIN"
+    },
+    {
+      "patient_id": "PAT011",
+      "date_of_birth": "1955-02-18T00:00:00",
+      "blood_type": "AB-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. GARCIA"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": false,
+          "date_given": null,
+          "expires": null,
+          "witness": null,
+          "notes": "Transfusion consent NOT given"
+        }
+      ],
+      "medications": [
+        "HEPARIN",
+        "WARFARIN"
+      ],
+      "prior_surgeries": 3,
+      "special_notes": "Scenario: blood shortage + missing transfusion consent + critical drug interaction HEPARIN + WARFARIN"
+    },
+    {
+      "patient_id": "PAT012",
+      "date_of_birth": "1998-11-03T00:00:00",
+      "blood_type": "O+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. HASSAN"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. HASSAN"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: emergency cesarean - all resources available"
+    },
+    {
+      "patient_id": "PAT013",
+      "date_of_birth": "1983-06-07T00:00:00",
+      "blood_type": "A-",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. NGUYEN"
+        }
+      ],
+      "medications": [
+        "METFORMIN",
+        "LISINOPRIL"
+      ],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: bariatric surgery - no transfusion consent"
+    },
+    {
+      "patient_id": "PAT014",
+      "date_of_birth": "1971-12-29T00:00:00",
+      "blood_type": "O+",
+      "allergies": [
+        {
+          "allergen": "LATEX",
+          "severity": "MODERATE",
+          "reaction": "CONTACT_DERMATITIS"
+        }
+      ],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. OSEI"
+        },
+        {
+          "consent_type": "ORGAN_TRANSPLANT",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. OSEI"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "DR. OSEI"
+        }
+      ],
+      "medications": [
+        "INSULIN",
+        "IMMUNOSUPPRESSANTS"
+      ],
+      "prior_surgeries": 1,
+      "special_notes": "Scenario: pancreas transplant - latex allergy MODERATE + immunosuppressant medications"
+    },
+    {
+      "patient_id": "PAT015",
+      "date_of_birth": "2018-03-15T00:00:00",
+      "blood_type": "B+",
+      "allergies": [],
+      "contraindications": [],
+      "consents": [
+        {
+          "consent_type": "SURGERY",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "GUARDIAN_VERIFIED",
+          "notes": "Consent given by guardian"
+        },
+        {
+          "consent_type": "TRANSFUSION",
+          "given": true,
+          "date_given": "2026-07-06T10:00:00",
+          "expires": "2026-08-05T10:00:00",
+          "witness": "GUARDIAN_VERIFIED",
+          "notes": "Consent given by guardian"
+        }
+      ],
+      "medications": [],
+      "prior_surgeries": 0,
+      "special_notes": "Scenario: pediatric cardiac - tight organ viability window near-critical"
     }
   ]
 }

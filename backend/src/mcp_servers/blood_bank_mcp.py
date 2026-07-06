@@ -2,17 +2,74 @@
 
 from datetime import datetime
 from typing import List, Optional
+from pydantic import TypeAdapter
+
 from src.data.repository import DataRepository
-from src.models.blood import BloodBankQuery, BloodBankResponse, BloodUnitStatus, CrossmatchStatus
+from src.config import Config
+from src.models.blood import BloodBankQuery, BloodBankResponse, BloodUnit, BloodUnitStatus, CrossmatchStatus
+from src.mcp_servers.remote_client import RemoteMCPClient
 
 
 class BloodBankMCPServer:
     """Mock MCP server for blood bank queries."""
     
-    def __init__(self, repository: DataRepository = None, fallback: "RegionalFallbackMCPServer" = None):
+    def __init__(
+        self,
+        repository: DataRepository = None,
+        fallback: "RegionalFallbackMCPServer" = None,
+        remote_client: RemoteMCPClient = None,
+    ):
         """Initialize the blood bank server."""
         self.repository = repository or DataRepository()
         self.fallback = fallback
+        self.remote_client = remote_client or RemoteMCPClient(Config.EXTERNAL_MCP_SSE_URL)
+
+    def _normalize_remote_units(self, available_units: List[dict]) -> List[dict]:
+        normalized_units = []
+
+        for unit in available_units:
+            if not isinstance(unit, dict):
+                continue
+
+            normalized_unit = dict(unit)
+            if "unit_id" not in normalized_unit and "id" in normalized_unit:
+                normalized_unit["unit_id"] = normalized_unit.pop("id")
+
+            normalized_units.append(normalized_unit)
+
+        return normalized_units
+
+    def _build_response(
+        self,
+        query: BloodBankQuery,
+        available_units: List[dict],
+        fallback_available: bool,
+    ) -> BloodBankResponse:
+        available_units = self._normalize_remote_units(available_units)
+        adapter = TypeAdapter(List[BloodUnit])
+        validated_units = adapter.validate_python(available_units)
+
+        earliest_exp = None
+        available_count = 0
+
+        for unit in validated_units:
+            if unit.status == BloodUnitStatus.AVAILABLE:
+                available_count += 1
+            if earliest_exp is None or unit.expiration_date < earliest_exp:
+                earliest_exp = unit.expiration_date
+
+        return BloodBankResponse(
+            query_id=f"BBQ-{datetime.utcnow().timestamp()}",
+            blood_type=query.blood_type,
+            units_requested=query.units_needed,
+            units_available=available_count,
+            available_units=validated_units[:query.units_needed],
+            units_pending_crossmatch=sum(1 for unit in validated_units if unit.status == BloodUnitStatus.PENDING_CROSSMATCH),
+            earliest_expiration=earliest_exp,
+            all_requirements_met=available_count >= query.units_needed,
+            fallback_available=fallback_available,
+            timestamp=datetime.utcnow(),
+        )
     
     def query_blood_availability(self, query: BloodBankQuery) -> BloodBankResponse:
         """
@@ -21,45 +78,23 @@ class BloodBankMCPServer:
         Returns:
             BloodBankResponse with available units and status.
         """
-        # Get available units from local inventory
-        local_units = self.repository.get_available_blood_units(query.blood_type)
-        
-        # Filter by status and validity
+        remote_result = self.remote_client.search_blood_inventory(query.blood_type.value)
+
+        if remote_result.get("success") and remote_result.get("data"):
+            fallback_available = False
+            if self.fallback:
+                fallback_available = self.fallback.has_blood(query.blood_type.value, query.units_needed)
+
+            return self._build_response(query, remote_result["data"], fallback_available)
+
+        # Fall back to local inventory if the external MCP cannot be reached.
+        local_units = self.repository.get_available_blood_units(query.blood_type.value)
         valid_units = [u for u in local_units if u['status'] in ['AVAILABLE', 'PENDING_CROSSMATCH']]
-        
-        # Count non-expired units
-        available_count = 0
-        earliest_exp = None
-        
-        for unit in valid_units:
-            exp_date = datetime.fromisoformat(unit['expiration_date'].replace('Z', '+00:00'))
-            if unit['status'] == 'AVAILABLE':
-                available_count += 1
-            if earliest_exp is None or exp_date < earliest_exp:
-                earliest_exp = exp_date
-        
-        # Check if all requirements are met
-        all_met = available_count >= query.units_needed
-        
-        # If not all available locally, check if fallback can help
         fallback_available = False
-        if not all_met and self.fallback:
-            fallback_available = self.fallback.has_blood(query.blood_type, query.units_needed - available_count)
-        
-        response = BloodBankResponse(
-            query_id=f"BBQ-{datetime.utcnow().timestamp()}",
-            blood_type=query.blood_type,
-            units_requested=query.units_needed,
-            units_available=available_count,
-            available_units=valid_units[:query.units_needed],  # Return only what's needed
-            units_pending_crossmatch=sum(1 for u in valid_units if u['status'] == 'PENDING_CROSSMATCH'),
-            earliest_expiration=earliest_exp,
-            all_requirements_met=all_met,
-            fallback_available=fallback_available,
-            timestamp=datetime.utcnow()
-        )
-        
-        return response
+        if self.fallback:
+            fallback_available = self.fallback.has_blood(query.blood_type.value, query.units_needed)
+
+        return self._build_response(query, valid_units, fallback_available)
     
     def get_blood_units(self, blood_type: str, count: int = None) -> List[dict]:
         """

@@ -57,11 +57,10 @@ critical-surgery-supply-coordinator/
 │   │   ├── main.py                    # FastAPI entry point
 │   │   ├── config.py                  # Configuration
 │   │   ├── models/                    # Pydantic models
-│   │   ├── agents/                    # Agent implementations
+│   │   ├── adk_pipeline/              # Google ADK LLM-per-agent pipeline
 │   │   ├── mcp_servers/               # Mock MCP servers
 │   │   ├── data/                      # Data repository & mock data
-│   │   ├── security/                  # PII redaction, RBAC, audit
-│   │   └── workflows/                 # Workflow orchestration
+│   │   └── security/                  # PII redaction, RBAC, audit
 │   └── tests/
 ├── frontend/
 │   ├── Dockerfile
@@ -142,13 +141,30 @@ Headers: user-role: OR_COORDINATOR
 GET /surgeries/{surgery_id}
 Headers: user-role: OR_COORDINATOR
 
-# Check readiness (requires authorization)
+# Check readiness via the Google ADK orchestration pipeline
+# (all 8 agents; SequentialAgent + ParallelAgent; see "ADK Pipeline" below)
 POST /check-readiness
 Headers: user-role: OR_COORDINATOR
 Body: {
   "surgery_id": "SURG001",
   "user_role": "OR_COORDINATOR",
   "requested_at": "2026-06-29T14:00:00"
+}
+```
+
+### Clinical Decisions (Accept/Reject)
+```bash
+# Record a clinician's accept/reject decision on one blocker from a
+# readiness report. This is a human sign-off only - it does not recompute
+# readiness_status, it is appended to the immutable audit trail.
+POST /surgeries/{surgery_id}/blockers/decision
+Headers: user-role: OR_COORDINATOR
+Body: {
+  "category": "BLOOD",
+  "message": "Blood unit BU-1002 is expired",
+  "severity": "CRITICAL",
+  "suggested_action": "Request replacement units from regional blood bank",
+  "decision": "ACCEPT"
 }
 ```
 
@@ -186,6 +202,14 @@ curl -X POST http://localhost:8000/check-readiness \
 
 ## Agents
 
+Each agent below is the same `LlmReasoningStage` base agent
+(`backend/src/adk_pipeline/llm_reasoning_stage.py`), configured with its own
+rules file (`backend/src/adk_pipeline/prompts/*.md`) and its own
+deterministically-gathered facts. The stage sends those facts + its rules
+file to the configured LLM endpoint and writes back the JSON verdict it
+returns - there is no separate Python implementation per agent, only a
+different prompt and a different set of facts.
+
 ### 1. Patient Data Agent
 - Extracts patient information from surgery request
 - Validates blood type and other requirements
@@ -205,33 +229,57 @@ curl -X POST http://localhost:8000/check-readiness \
 - Checks crossmatch status
 - Falls back to regional inventory if needed
 
-### 4. Organ Agent (Skeleton - Phase 3)
+### 4. Organ Agent
 - Queries organ registry
 - Checks donor-recipient compatibility
 - Verifies viability windows
-- Estimates procurement time
+- Falls back to regional network if needed
 
-### 5. Equipment Agent (Skeleton - Phase 3)
+### 5. Equipment Agent
 - Queries equipment inventory
 - Verifies sterilization status
 - Checks maintenance schedules
 - Confirms all required equipment is available
 
-### 6. Validation Agent (Skeleton - Phase 3)
-- Cross-checks resource compatibility
+### 6. Validation Agent
+- Cross-checks resource compatibility (organ viability vs. procedure duration, pending crossmatch vs. transplant, etc.)
 - Validates timing constraints
 - Ensures all requirements are met
 
-### 7. Logistics Agent (Skeleton - Phase 3)
-- Estimates transport times
+### 7. Logistics Agent
+- Estimates regional transport times for blood/organ fallback
 - Calculates total procedure timeline
 - Identifies time-critical constraints
 
-### 8. Coordinator Agent (Skeleton - Phase 3)
-- Aggregates findings from all agents
-- Determines final readiness status (READY/NOT_READY/BLOCKED)
-- Generates pre-operative checklist
-- Produces human-readable report
+### 8. Coordinator Agent
+- Reads every prior agent's findings and produces the final readiness status (READY/BLOCKED), blockers, and pre-operative checklist
+- Writes the human-readable narrative briefing for the OR coordinator
+
+## ADK Pipeline
+
+`POST /check-readiness` runs the 8-agent architecture above as an actual
+Google ADK orchestration graph (`backend/src/adk_pipeline/`):
+
+```
+SequentialAgent(
+    PatientDataStage, SafetyConsentStage,
+    ParallelAgent(BloodBankStage, OrganStage, EquipmentStage),
+    ValidationStage, LogisticsStage, CoordinatorStage
+)
+```
+
+Agents fire automatically in this fixed sequence - ADK, not an LLM, decides
+the orchestration/routing. Each stage's own *judgment* (extraction, safety
+checks, availability, validation, the final verdict) is an LLM call against
+that stage's prompt file, using the configured OpenAI-compatible endpoint
+(`OPENROUTER_API_BASE` / `OPENROUTER_API_KEY` / `LLM_MODEL` in
+`backend/.env` - default: gpt-oss-120b via OpenRouter, free tier). Because
+every stage is LLM-driven, **the resulting report is decision-support only
+and always requires human review** before any clinical action is taken -
+see `review_required` on the response and the disclaimer on every endpoint.
+
+Check `llm_pipeline_configured` on `GET /health` to confirm
+`OPENROUTER_API_KEY` is set before calling `/check-readiness`.
 
 ## Security Features
 
@@ -299,7 +347,7 @@ curl -X POST http://localhost:8000/check-readiness \
 
 ## MCP Servers
 
-The system includes mock implementations of these MCP-style servers:
+The backend includes local wrappers for the core coordination flow, and this branch also adds a standalone external MCP server backed by SQLite for resource queries:
 
 ### blood_bank_mcp
 - `query_blood_availability()`: Check availability by blood type
@@ -323,6 +371,12 @@ The system includes mock implementations of these MCP-style servers:
 - `query_organ_availability()`: Check regional organ availability
 - `request_blood_transfer()`: Request blood from regional network
 - `request_organ_transfer()`: Request organ from regional network
+
+### external-mcp-server
+- `search_blood_inventory()`: Remote blood inventory lookup over MCP SSE
+- `search_organ_registry()`: Remote organ registry lookup over MCP SSE
+- `search_equipment()`: Remote equipment lookup over MCP SSE
+- Backed by SQLite and exposed through `/mcp/sse`
 
 ## Configuration
 
@@ -356,7 +410,7 @@ curl -X POST http://localhost:8000/check-readiness \
 
 ## Roadmap
 
-### Phase 1 ✅ (Current)
+### Phase 1 ✅ (Complete)
 - ✅ Project structure and Pydantic models
 - ✅ Mock data with demo scenarios
 - ✅ MCP-style mock servers
@@ -368,18 +422,18 @@ curl -X POST http://localhost:8000/check-readiness \
 - ✅ PII redaction and RBAC
 - ✅ Audit logging
 
-### Phase 2 (Next)
-- ⬜ Organ Agent (full implementation)
-- ⬜ Equipment Agent (full implementation)
-- ⬜ Validation Agent
-- ⬜ Logistics Agent
-- ⬜ Coordinator Agent
-- ⬜ Frontend enhancements
-- ⬜ Integration tests
+### Phase 2 ✅ (Complete)
+- ✅ Organ Agent (full implementation)
+- ✅ Equipment Agent (full implementation)
+- ✅ Validation Agent
+- ✅ Logistics Agent
+- ✅ Coordinator Agent
+- ✅ Frontend enhancements
+- ✅ Integration tests
 
-### Phase 3 (Future)
-- ⬜ Database backend (SQLite or PostgreSQL)
-- ⬜ Real MCP server implementation
+### Phase 3 🚧 (In Progress on `feature/mcp`)
+- ✅ Database backend (SQLite)
+- ✅ Real MCP server implementation
 - ⬜ Advanced reporting and analytics
 - ⬜ Performance optimization
 - ⬜ Production deployment configuration
@@ -390,8 +444,8 @@ curl -X POST http://localhost:8000/check-readiness \
 2. **Human Review Required**: All outputs must be reviewed by qualified personnel
 3. **Mock Data Only**: Current implementation uses mock data for demonstration
 4. **PII Protection**: All personally identifiable information is redacted in logs
-5. **Immutable Audit Trail**: All actions are permanently logged
-6. **Decision Support Only**: System provides recommendations only
+5. **Immutable Audit Trail**: All actions are permanently logged, including every clinician accept/reject decision on a reported blocker
+6. **Decision Support Only**: System provides recommendations only - accepting or rejecting a blocker is a recorded sign-off, it never changes the computed readiness status
 
 ## License
 

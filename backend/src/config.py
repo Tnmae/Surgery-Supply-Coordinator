@@ -1,5 +1,6 @@
 """Configuration management."""
 
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -21,6 +22,11 @@ class Config:
     API_TITLE = "Surgery Supply Coordination API"
     API_DESCRIPTION = "Decision-support system for surgical readiness"
     API_VERSION = "1.0.0"
+
+    # External MCP
+    EXTERNAL_MCP_ENABLED = os.getenv("EXTERNAL_MCP_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+    EXTERNAL_MCP_BASE_URL = os.getenv("EXTERNAL_MCP_BASE_URL", "https://external-medical-mcp.vercel.app/mcp")
+    EXTERNAL_MCP_SSE_URL = os.getenv("EXTERNAL_MCP_SSE_URL", "https://external-medical-mcp.vercel.app/mcp/sse")
     
     # Security
     REQUIRE_AUTH = False
