@@ -8,7 +8,19 @@ function headers(role) {
 }
 
 async function parse(res) {
-  const data = await res.json();
+  // Read the body as text first so we can give a useful error if it's not JSON
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // Got HTML or plain text — the backend URL is likely wrong or unreachable
+    throw new Error(
+      `Backend returned non-JSON response (HTTP ${res.status}). ` +
+      `Check that VITE_API_BASE_URL is set correctly in Vercel environment variables. ` +
+      `Received: ${text.slice(0, 120)}`
+    );
+  }
   if (!res.ok) {
     const message = data?.detail || data?.message || `Request failed with ${res.status}`;
     throw new Error(message);
