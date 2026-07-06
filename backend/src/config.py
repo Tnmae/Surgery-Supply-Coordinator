@@ -23,6 +23,9 @@ class Config:
     API_DESCRIPTION = "Decision-support system for surgical readiness"
     API_VERSION = "1.0.0"
 
+    # CORS — read from ALLOWED_ORIGINS env var (comma-separated) or fall back to localhost
+    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+
     # External MCP
     EXTERNAL_MCP_ENABLED = os.getenv("EXTERNAL_MCP_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
     EXTERNAL_MCP_BASE_URL = os.getenv("EXTERNAL_MCP_BASE_URL", "https://external-medical-mcp.vercel.app/mcp")
