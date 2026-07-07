@@ -1,4 +1,4 @@
-"""entry point for the FastAPI backend.
+"""now entry point for the FastAPI backend.
 
 Vercel looks for a callable named `app` in api/index.py.
 We just import the existing FastAPI app — no changes to src/ needed.
