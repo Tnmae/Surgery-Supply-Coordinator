@@ -26,98 +26,77 @@
         "scheduled_time": "2026-06-29T14:00:00",
         "blockers": [
           {
-            "category": "CONSENT",
-            "severity": "CRITICAL",
-            "message": "Missing required consent: TRANSFUSION",
-            "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
-          },
-          {
-            "category": "CONSENT",
-            "severity": "CRITICAL",
-            "message": "Missing required consent: ORGAN_TRANSPLANT",
-            "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian"
-          },
-          {
             "category": "EQUIPMENT",
             "severity": "CRITICAL",
             "message": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
             "suggested_action": "Source or sterilize a replacement for CARDIAC_MONITOR"
           },
           {
+            "category": "BLOOD",
+            "severity": "LOW",
+            "message": "4/13 units of O+ available, 1 pending crossmatch",
+            "suggested_action": ""
+          },
+          {
             "category": "EQUIPMENT",
             "severity": "CRITICAL",
-            "message": "Equipment unavailable or not sterile: BYPASS_MACHINE",
-            "suggested_action": "Source or sterilize a replacement for BYPASS_MACHINE"
+            "message": "BYPASS_MACHINE - maintenance overdue",
+            "suggested_action": "Perform maintenance on BYPASS_MACHINE"
           }
         ],
         "warnings": [
-          "Patient on anticoagulant (WARFARIN) - careful with anesthesia",
           "\u26a0\ufe0f  Medication interaction: ASPIRIN - Antiplatelet - may increase bleeding risk",
-          "\u26a0\ufe0f  Medication interaction: METOPROLOL - No specific interaction, but verify anesthesia plan",
-          "3/4 units of O+ available, 1 pending crossmatch",
+          "\u26a0\ufe0f  Medication interaction: METOPROLOL - Beta blocker - may affect heart rate and blood pressure",
           "Scheduled time 2026-06-29T14:00:00 is earlier than the readiness check time",
-          "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
           "Equipment check reported BLOCKED \u2014 readiness cannot proceed until resolved",
-          "Organ viability risk is MEDIUM; monitor transport/procurement timing closely",
-          "Regional transport required \u2014 adds ~4.0h before the procedure can start"
+          "Blood check reported BLOCKED \u2014 readiness cannot proceed until resolved"
         ],
         "preop_checklist": [
           {
-            "item": "Patient identity/blood type confirmed",
+            "item": "patient identity/blood type confirmed",
             "completed": true
           },
           {
-            "item": "Consents verified",
-            "completed": false
-          },
-          {
-            "item": "Blood reserved",
+            "item": "consents verified",
             "completed": true
           },
           {
-            "item": "Equipment ready",
+            "item": "blood reserved",
             "completed": false
           },
           {
-            "item": "Organ confirmed",
+            "item": "equipment ready",
             "completed": false
+          },
+          {
+            "item": "organ confirmed",
+            "completed": false
+          },
+          {
+            "item": "cross-resource validation passed",
+            "completed": true
           }
         ],
         "agent_results": {
           "patient_data": {
             "extraction_successful": true,
             "missing_fields": [],
-            "warnings": [
-              "Patient on anticoagulant (WARFARIN) - careful with anesthesia"
-            ]
+            "warnings": []
           },
           "safety_consent": {
-            "passed": false,
-            "blockers": [
-              {
-                "category": "CONSENT",
-                "severity": "CRITICAL",
-                "message": "Missing required consent: TRANSFUSION",
-                "suggested_action": "Obtain TRANSFUSION consent from patient/guardian"
-              },
-              {
-                "category": "CONSENT",
-                "severity": "CRITICAL",
-                "message": "Missing required consent: ORGAN_TRANSPLANT",
-                "suggested_action": "Obtain ORGAN_TRANSPLANT consent from patient/guardian"
-              }
-            ],
+            "passed": true,
+            "blockers": [],
             "warnings": [
               "\u26a0\ufe0f  Medication interaction: ASPIRIN - Antiplatelet - may increase bleeding risk",
-              "\u26a0\ufe0f  Medication interaction: METOPROLOL - No specific interaction, but verify anesthesia plan"
+              "\u26a0\ufe0f  Medication interaction: METOPROLOL - Beta blocker - may affect heart rate and blood pressure"
             ]
           },
           "blood": {
             "available": true,
             "status": "WARNING",
-            "details": "3/4 units of O+ available, 1 pending crossmatch",
+            "details": "4/13 units of O+ available, 1 pending crossmatch",
             "units_pending_crossmatch": 1,
-            "fallback_required": true,
+            "fallback_required": false,
             "blockers": []
           },
           "organ": {
@@ -132,10 +111,9 @@
           "equipment": {
             "all_available": false,
             "status": "BLOCKED",
-            "details": "Missing or unavailable equipment: CARDIAC_MONITOR, BYPASS_MACHINE",
+            "details": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
             "unavailable": [
-              "CARDIAC_MONITOR",
-              "BYPASS_MACHINE"
+              "CARDIAC_MONITOR"
             ],
             "maintenance_concerns": [
               "BYPASS_MACHINE - maintenance overdue"
@@ -146,12 +124,6 @@
                 "severity": "CRITICAL",
                 "message": "Equipment unavailable or not sterile: CARDIAC_MONITOR",
                 "suggested_action": "Source or sterilize a replacement for CARDIAC_MONITOR"
-              },
-              {
-                "category": "EQUIPMENT",
-                "severity": "CRITICAL",
-                "message": "Equipment unavailable or not sterile: BYPASS_MACHINE",
-                "suggested_action": "Source or sterilize a replacement for BYPASS_MACHINE"
               }
             ]
           },
@@ -160,26 +132,21 @@
             "blockers": [],
             "warnings": [
               "Scheduled time 2026-06-29T14:00:00 is earlier than the readiness check time",
-              "Blood units pending crossmatch for an organ transplant case \u2014 confirm crossmatch before organ arrival",
               "Equipment check reported BLOCKED \u2014 readiness cannot proceed until resolved",
-              "Organ viability risk is MEDIUM; monitor transport/procurement timing closely"
+              "Blood check reported BLOCKED \u2014 readiness cannot proceed until resolved"
             ]
           },
           "logistics": {
             "estimated_duration_minutes": 180,
-            "transport_time_hours": 4.0,
-            "total_timeline_minutes": 276,
+            "transport_time_hours": 0.0,
+            "total_timeline_minutes": 180,
             "time_critical": false,
-            "notes": [
-              "Regional blood transfer required"
-            ],
-            "warnings": [
-              "Regional transport required \u2014 adds ~4.0h before the procedure can start"
-            ]
+            "notes": [],
+            "warnings": []
           }
         },
-        "human_readable_report": "The surgical readiness check is BLOCKED due to missing consents and unavailable equipment. The patient is on anticoagulant WARFARIN and has medication interactions with ASPIRIN and METOPROLOL. Blood units are available but pending crossmatch. The scheduled time is earlier than the readiness check time, and equipment is unavailable or not sterile. Organ viability risk is MEDIUM. Regional transport is required, adding ~4.0h before the procedure can start. This is decision-support only and requires review and approval by qualified clinical personnel before any action is taken.",
-        "timestamp": "2026-07-06T01:56:51.241719",
+        "human_readable_report": "The final status is BLOCKED. The key blockers are: Equipment unavailable or not sterile: CARDIAC_MONITOR, 4/13 units of O+ available, 1 pending crossmatch, and BYPASS_MACHINE - maintenance overdue. There are no time-critical logistics constraints. This is a decision-support only output and requires review and approval by qualified clinical personnel before any action is taken.",
+        "timestamp": "2026-07-07T02:34:49.755155",
         "review_required": true
       },
       "readiness_review_status": "PENDING_REVIEW",
@@ -245,7 +212,7 @@
           "acted_at": "2026-07-05T13:05:04.290532"
         }
       ],
-      "last_updated": "2026-07-06T01:56:51.242729",
+      "last_updated": "2026-07-07T02:34:49.755155",
       "readiness_reviewed_at": "2026-07-05T13:05:04.290532",
       "reviewed_by_role": "OR_COORDINATOR"
     },

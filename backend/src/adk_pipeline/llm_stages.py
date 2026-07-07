@@ -8,7 +8,7 @@ re-implements judgment in Python - that now lives entirely in the prompt
 files under `prompts/`.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
@@ -60,7 +60,7 @@ def build_safety_consent_stage(repository: DataRepository) -> LlmReasoningStage:
         patient = repository.get_patient(surgery_dict["patient_id"]) or {}
         return {
             "surgery_type": surgery_dict.get("surgery_type"),
-            "now": datetime.utcnow().isoformat(),
+            "now": datetime.now(timezone.utc).isoformat(),
             "consents": patient.get("consents", []),
             "allergies": patient.get("allergies", []),
             "contraindications": patient.get("contraindications", []),
@@ -103,7 +103,11 @@ def build_blood_bank_stage(
         response = blood_server.query_blood_availability(query)
         hours_to_exp = None
         if response.earliest_expiration:
-            hours_to_exp = (response.earliest_expiration - datetime.utcnow()).total_seconds() / 3600
+            exp = response.earliest_expiration
+            # Normalise: if the timestamp is naive, treat it as UTC
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            hours_to_exp = (exp - datetime.now(timezone.utc)).total_seconds() / 3600
         return {
             "blood_type": surgery_dict["required_blood_type"],
             "units_needed": surgery_dict["required_blood_units"],
@@ -214,7 +218,7 @@ def build_equipment_stage(repository: DataRepository) -> LlmReasoningStage:
         return {
             "requested_equipment": equipment_list,
             "equipment_details": details,
-            "now": datetime.utcnow().isoformat(),
+            "now": datetime.now(timezone.utc).isoformat(),
         }
 
     def fallback_builder(facts: Dict[str, Any], error: str) -> Dict[str, Any]:

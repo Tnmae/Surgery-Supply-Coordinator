@@ -1,6 +1,6 @@
 """Mock MCP server for equipment inventory operations."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict
 from pydantic import TypeAdapter
 
@@ -73,7 +73,7 @@ class EquipmentInventoryMCPServer:
                         continue
 
                 next_maint = datetime.fromisoformat(str(equipment['next_maintenance_due']).replace('Z', '+00:00'))
-                if next_maint < datetime.utcnow():
+                if next_maint < datetime.now(timezone.utc):
                     maintenance_concerns.append(f"{name} - maintenance overdue")
 
                 available[name] = equipment
@@ -104,7 +104,7 @@ class EquipmentInventoryMCPServer:
                 
                 # Check maintenance status
                 next_maint = datetime.fromisoformat(equipment['next_maintenance_due'].replace('Z', '+00:00'))
-                if next_maint < datetime.utcnow():
+                if next_maint < datetime.now(timezone.utc):
                     maintenance_concerns.append(f"{name} - maintenance overdue")
                 
                 available[name] = equipment
@@ -168,7 +168,7 @@ class EquipmentInventoryMCPServer:
         for eq in self.repository.get_all_equipment():
             if eq['equipment_id'] == equipment_id:
                 next_maint = datetime.fromisoformat(eq['next_maintenance_due'].replace('Z', '+00:00'))
-                is_overdue = next_maint < datetime.utcnow()
+                is_overdue = next_maint < datetime.now(timezone.utc)
                 
                 return {
                     "success": True,
