@@ -1,6 +1,6 @@
 """Mock MCP server for organ registry operations."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 from typing import List, Optional, Any, Dict
 from pydantic import TypeAdapter
@@ -11,15 +11,7 @@ from src.models.organ import OrganRegistryQuery, OrganRegistryResponse, OrganUni
 from src.mcp_servers.remote_client import RemoteMCPClient
 
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _parse_dt(value) -> datetime:
-    dt = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt
+class OrganRegistryMCPServer:
     """Mock MCP server for organ registry queries."""
     
     def __init__(
@@ -107,8 +99,8 @@ def _parse_dt(value) -> datetime:
                     cold_start_value = organ.get("cold_storage_started")
                     viability_window_minutes = organ.get("viability_window_minutes", 0)
                     if cold_start_value:
-                        cold_start = _parse_dt(cold_start_value)
-                        now = _utcnow()
+                        cold_start = datetime.fromisoformat(str(cold_start_value).replace('Z', '+00:00'))
+                        now = datetime.utcnow()
                         cold_time = (now - cold_start).total_seconds() / 60
                         viability_remaining = viability_window_minutes - cold_time
 
@@ -139,8 +131,8 @@ def _parse_dt(value) -> datetime:
         
         for organ in available_organs:
             # Check viability window
-            cold_start = _parse_dt(organ['cold_storage_started'])
-            now = _utcnow()
+            cold_start = datetime.fromisoformat(organ['cold_storage_started'].replace('Z', '+00:00'))
+            now = datetime.utcnow()
             cold_time = (now - cold_start).total_seconds() / 60
             viability_remaining = organ['viability_window_minutes'] - cold_time
             
@@ -226,8 +218,8 @@ def _parse_dt(value) -> datetime:
         if not organ:
             return {"success": False, "message": "Organ not found"}
         
-        cold_start = _parse_dt(organ['cold_storage_started'])
-        now = _utcnow()
+        cold_start = datetime.fromisoformat(organ['cold_storage_started'].replace('Z', '+00:00'))
+        now = datetime.utcnow()
         cold_time_minutes = (now - cold_start).total_seconds() / 60
         viability_remaining = organ['viability_window_minutes'] - cold_time_minutes
         
