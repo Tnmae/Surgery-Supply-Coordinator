@@ -1,7 +1,7 @@
 """Data repository for managing mock data."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
@@ -192,7 +192,7 @@ class DataRepository:
         """Get available (not expired, not in use) blood units of a specific type."""
         units = self.get_blood_units_by_type(blood_type)
         available = []
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         for unit in units:
             # Check if not expired and not in problematic status

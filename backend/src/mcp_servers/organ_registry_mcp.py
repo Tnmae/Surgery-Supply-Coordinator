@@ -1,6 +1,6 @@
 """Mock MCP server for organ registry operations."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from typing import List, Optional, Any, Dict
 from pydantic import TypeAdapter
@@ -100,7 +100,7 @@ class OrganRegistryMCPServer:
                     viability_window_minutes = organ.get("viability_window_minutes", 0)
                     if cold_start_value:
                         cold_start = datetime.fromisoformat(str(cold_start_value).replace('Z', '+00:00'))
-                        now = datetime.utcnow()
+                        now = datetime.now(timezone.utc)
                         cold_time = (now - cold_start).total_seconds() / 60
                         viability_remaining = viability_window_minutes - cold_time
 
@@ -132,7 +132,7 @@ class OrganRegistryMCPServer:
         for organ in available_organs:
             # Check viability window
             cold_start = datetime.fromisoformat(organ['cold_storage_started'].replace('Z', '+00:00'))
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             cold_time = (now - cold_start).total_seconds() / 60
             viability_remaining = organ['viability_window_minutes'] - cold_time
             
@@ -219,7 +219,7 @@ class OrganRegistryMCPServer:
             return {"success": False, "message": "Organ not found"}
         
         cold_start = datetime.fromisoformat(organ['cold_storage_started'].replace('Z', '+00:00'))
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cold_time_minutes = (now - cold_start).total_seconds() / 60
         viability_remaining = organ['viability_window_minutes'] - cold_time_minutes
         
