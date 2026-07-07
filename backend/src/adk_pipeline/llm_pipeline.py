@@ -15,6 +15,7 @@ Model: gpt-oss-120b via OpenRouter (OPENROUTER_API_BASE / OPENROUTER_API_KEY
 """
 
 from datetime import datetime
+import logging
 
 from google.adk.agents import ParallelAgent, SequentialAgent
 from google.adk.runners import Runner
@@ -37,6 +38,7 @@ from src.mcp_servers.regional_fallback_mcp import RegionalFallbackMCPServer
 from src.security.audit_logger import AuditLogger
 
 APP_NAME = "surgery_supply_coordinator_llm"
+logger = logging.getLogger(__name__)
 
 
 def build_llm_pipeline(repository: DataRepository) -> SequentialAgent:
@@ -104,6 +106,9 @@ async def run_llm_readiness_pipeline(
         ):
             pass
     except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        logger.error("LLM pipeline error for %s:\n%s", surgery_id, tb)
         audit_logger.log_action(
             action="LLM_PIPELINE_ERROR",
             actor_role=user_role,
@@ -112,7 +117,12 @@ async def run_llm_readiness_pipeline(
             error=str(e),
             result="FAILURE",
         )
-        return {"success": False, "message": "LLM pipeline execution failed", "error": str(e)}
+        return {
+            "success": False,
+            "message": "LLM pipeline execution failed",
+            "error": str(e),
+            "error_type": type(e).__name__,
+        }
 
     session = await session_service.get_session(app_name=APP_NAME, user_id=user_role, session_id=session_id)
     state = session.state
