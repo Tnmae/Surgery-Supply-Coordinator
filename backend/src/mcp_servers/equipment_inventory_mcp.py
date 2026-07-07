@@ -1,6 +1,6 @@
 """Mock MCP server for equipment inventory operations."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional, Any, Dict
 from pydantic import TypeAdapter
 
@@ -10,17 +10,7 @@ from src.mcp_servers.remote_client import RemoteMCPClient
 from src.models.equipment import Equipment, EquipmentQueryResponse
 
 
-def _utcnow() -> datetime:
-    """Always return a timezone-aware UTC datetime to avoid naive/aware subtraction errors."""
-    return datetime.now(timezone.utc)
-
-
-def _parse_dt(value: str) -> datetime:
-    """Parse an ISO datetime string and normalise to UTC-aware."""
-    dt = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt
+class EquipmentInventoryMCPServer:
     """Mock MCP server for equipment inventory queries."""
     
     def __init__(self, repository: DataRepository = None, remote_client: RemoteMCPClient = None):
@@ -82,8 +72,8 @@ def _parse_dt(value: str) -> datetime:
                         unavailable.append(name)
                         continue
 
-                next_maint = _parse_dt(equipment['next_maintenance_due'])
-                if next_maint < _utcnow():
+                next_maint = datetime.fromisoformat(str(equipment['next_maintenance_due']).replace('Z', '+00:00'))
+                if next_maint < datetime.utcnow():
                     maintenance_concerns.append(f"{name} - maintenance overdue")
 
                 available[name] = equipment
@@ -113,8 +103,8 @@ def _parse_dt(value: str) -> datetime:
                         continue
                 
                 # Check maintenance status
-                next_maint = _parse_dt(equipment['next_maintenance_due'])
-                if next_maint < _utcnow():
+                next_maint = datetime.fromisoformat(equipment['next_maintenance_due'].replace('Z', '+00:00'))
+                if next_maint < datetime.utcnow():
                     maintenance_concerns.append(f"{name} - maintenance overdue")
                 
                 available[name] = equipment
@@ -177,8 +167,8 @@ def _parse_dt(value: str) -> datetime:
         """
         for eq in self.repository.get_all_equipment():
             if eq['equipment_id'] == equipment_id:
-                next_maint = _parse_dt(eq['next_maintenance_due'])
-                is_overdue = next_maint < _utcnow()
+                next_maint = datetime.fromisoformat(eq['next_maintenance_due'].replace('Z', '+00:00'))
+                is_overdue = next_maint < datetime.utcnow()
                 
                 return {
                     "success": True,
