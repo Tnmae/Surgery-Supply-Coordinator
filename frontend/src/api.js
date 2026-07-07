@@ -25,6 +25,13 @@ async function parse(res) {
     const message = data?.detail || data?.message || `Request failed with ${res.status}`;
     throw new Error(message);
   }
+  // Pipeline failures return HTTP 200 with success:false — surface the detail
+  if (data?.success === false) {
+    const detail = data?.error
+      ? `${data.message} — ${data.error}`
+      : data?.message || 'Pipeline returned an error';
+    throw new Error(detail);
+  }
   return data;
 }
 

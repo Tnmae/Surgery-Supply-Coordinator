@@ -77,13 +77,61 @@ def add_disclaimer(response_dict: dict) -> dict:
 @app.get("/health")
 async def health_check() -> dict:
     """Health check endpoint."""
+    from src.adk_pipeline.llm_client import _provider, _model
+    try:
+        provider = _provider()
+        model = _model()
+        llm_configured = True
+    except Exception as e:
+        provider = "unknown"
+        model = str(e)
+        llm_configured = False
+
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "service": Config.APP_NAME,
         "version": Config.APP_VERSION,
-        "llm_pipeline_configured": bool(os.environ.get("OPENROUTER_API_KEY")),
+        "llm_provider": provider,
+        "llm_model": model,
+        "llm_pipeline_configured": llm_configured,
     }
+
+
+@app.get("/debug/llm")
+async def debug_llm(user_role: str = Depends(verify_role)) -> dict:
+    """
+    Test the configured LLM endpoint with a minimal JSON ping.
+    Returns the raw response so you can confirm credentials and model
+    are working without running a full pipeline.
+    """
+    import asyncio
+    from src.adk_pipeline.llm_client import call_llm_json, LlmCallError, _provider, _model
+
+    try:
+        provider = _provider()
+        model = _model()
+    except Exception as e:
+        return {"success": False, "error": str(e), "stage": "config"}
+
+    try:
+        result = await asyncio.to_thread(
+            call_llm_json,
+            'You are a test assistant. Respond with ONLY a JSON object, no prose.',
+            'Return exactly: {"status": "ok", "provider": "' + provider + '"}',
+            max_tokens=60,
+        )
+        return {
+            "success": True,
+            "provider": provider,
+            "model": model,
+            "response": result,
+        }
+    except LlmCallError as e:
+        return {"success": False, "provider": provider, "model": model, "error": str(e)}
+    except Exception as e:
+        return {"success": False, "provider": provider, "model": model,
+                "error": str(e), "error_type": type(e).__name__}
 
 
 # ===== Surgery Endpoints =====
